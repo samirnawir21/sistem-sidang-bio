@@ -64,69 +64,407 @@
         .section { display: none; }
         .section.active { display: block; }
 
-        /* PDF TEMPLATE STYLING (KOP SURAT) */
-        #pdf-template { position: absolute; left: -9999px; top: 0; width: 210mm; min-height: 297mm; padding: 25mm; background: white; color: black; font-family: 'Times New Roman', Times, serif; }
-        .pdf-header-container { display: flex; align-items: center; border-bottom: 4px double black; padding-bottom: 10px; margin-bottom: 25px; }
-        .pdf-logo { width: 80px; height: auto; margin-right: 20px; }
-        .pdf-header-text { text-align: center; flex: 1; }
-        .pdf-header-text h2 { font-size: 16pt; margin: 0; color: black; border: none; padding: 0; }
-        .pdf-header-text h3 { font-size: 14pt; margin: 0; }
-        .pdf-header-text p { font-size: 9pt; margin: 2px 0; }
-        
+        /* PDF TEMPLATE HIDDEN */
+        #pdf-template { position: absolute; left: -9999px; top: 0; width: 210mm; padding: 20mm; background: white; color: black; font-family: 'Times New Roman', Times, serif; }
+        .pdf-header { text-align: center; border-bottom: 3px solid black; padding-bottom: 10px; margin-bottom: 20px; }
         .pdf-body { font-size: 12pt; line-height: 1.6; text-align: justify; }
-        .pdf-sig-container { margin-top: 50px; display: flex; justify-content: flex-end; }
-        .pdf-sig-box { text-align: left; width: 250px; position: relative; }
-        .signature-img { width: 130px; height: auto; margin: -15px 0 -15px 10px; display: block; }
+        .pdf-sig { margin-top: 50px; float: right; text-align: left; width: 250px; }
     </style>
 </head>
 <body>
 
     <div id="pdf-template">
-        <div class="pdf-header-container">
-            <img class="pdf-logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjMDU5NjY5IiBkPSJNMjU2IDhMMTggOTR2MTIzYzAgMTU0IDEwMiAyOTggMjM4IDM0NCAxMzYtNDYgMjM4LTE5MCAyMzgtMzQ0Vjk0TDI1NiA4em0wIDQwNWMtOTggMC0xNzgtODAtMTc4LTE3OHM4MC0xNzggMTc4LTE3OCAxNzggODAgMTc4IDE3OC04MCAxNzgtMTc4IDE3OHoiLz48L3N2Zz4=">
-            <div class="pdf-header-text">
-                <h2>UNIVERSITAS WIRALODRA</h2>
-                <h3>FAKULTAS KEGURUAN DAN ILMU PENDIDIKAN</h3>
-                <h3 style="font-weight: bold;">PROGRAM STUDI PENDIDIKAN BIOLOGI</h3>
-                <p>Terakreditasi Baik Sekali LAMDIK Nomor: 194/LAMDIK/Ak/S/1/2023</p>
-                <p>Jl. Ir. H. Djuanda Km. 3 Indramayu 45213 Telp. (0234) 271885</p>
-                <p>Email: prodibiofkipunwir@gmail.com</p>
-            </div>
+        <div class="pdf-header">
+            <h3 style="margin:0;">UNIVERSITAS WIRALODRA</h3>
+            <h4 style="margin:0;">FAKULTAS KEGURUAN DAN ILMU PENDIDIKAN</h4>
+            <h4 style="margin:0;">PROGRAM STUDI PENDIDIKAN BIOLOGI</h4>
+            <p style="font-size: 8pt; margin: 5px 0;">Terakreditasi Baik Sekali LAMDIK Nomor: 194/LAMDIK/Ak/S/1/2023</p>
+            <p style="font-size: 8pt; margin:0;">Jl. Ir. H. Djuanda Km. 3 Indramayu 45213 Telp. (0234) 271885</p>
         </div>
         <div class="pdf-body">
-            <p>Nomor : <span id="pdf-nomor">69/N/Bio-FKIP/XII/2025</span></p>
-            <p>Perihal : <b>Hasil Sidang Skripsi</b></p>
+            <p style="text-align: left;">Nomor : <span id="pdf-nomor">69/N/Bio-FKIP/XII/2025</span></p>
+            <p style="text-align: left;">Perihal : Hasil Sidang Skripsi</p>
             <br>
             <p>Yth. Sdr. <b id="pdf-nama-mhs">NAMA MAHASISWA</b></p>
             <p>Peserta Sidang Skripsi</p>
             <p>Program Studi Pendidikan Biologi</p>
             <p>FKIP Unwir</p>
             <br>
-            <p>Berdasarkan hasil penilaian Tim Penguji atas penampilan Saudara pada Sidang Skripsi yang telah dilaksanakan, Saudara dinyatakan <b>Lulus</b> dengan nilai <b>(<span id="pdf-grade">A</span>) (<span id="pdf-skor">80.00</span>)</b> pada Program Studi Pendidikan Biologi FKIP Universitas Wiralodra.</p>
+            <p>Berdasarkan hasil penilaian Tim Penguji atas penampilan Saudara pada Sidang Skripsi yang dilaksanakan. Saudara dinyatakan <b>Lulus</b> dengan nilai <b>(<span id="pdf-grade">A</span>) (<span id="pdf-skor">80.00</span>)</b> pada Program Studi Pendidikan Biologi FKIP Universitas Wiralodra.</p>
             <br>
-            <p>Kami ucapkan selamat kepada Saudara yang dinyatakan lulus dan jangan berkecil hati, tetaplah bersemangat bagi Saudara yang dinyatakan tidak lulus.</p>
+            <p>Kami ucapkan selamat kepada Saudara yang dinyatakan lulus dan jangan berkecil hati bersemangatlah kembali bagi Saudara yang dinyatakan tidak lulus.</p>
         </div>
-        <div class="pdf-sig-container">
-            <div class="pdf-sig-box">
-                <p>Indramayu, <span id="pdf-tgl-skrg">23 Desember 2025</span></p>
-                <p>Ketua Program Studi,</p>
-                <img class="signature-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAAyCAYAAAC99THMAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFJ0lEQVR4nO2ba2hcVRSAn/uYzKSpTZM2SdtU06SptmmapE2SpkmbpE2SpkmbpEnSJGmSNEmaJE2SpmmbpE2SpmmbpE2SpkmbpE2SpmmbpE2SpmmbpEnSJGmSNEmaJE2Spkn7n5m7H5u80SbtJGmStEn7nxnbuXOfOfvsvda999oH+Z//I+8fPdrf6A9A8A8g+AcQ/AMI/gEE/wCCfwDBP4DgH0DwDyD4BxD8Awj+AQT/AIJ/AME/gOAfQPAPIPhvC+R94L7W3fR9B63fO+ivfP456K98/jnoL3f+GegXfX4++nOenwP9mOfnQD/u+VnQ3/r8LOivfX4GdG+evwa6O88vhX6u8Xsh7uX3fVwW4vH76U+F6Tsc7O887K887O887K887K887K887K887K887K887K887K887K887O+fL7D96f79E6jD2z/29v/u6f9N8O8O+9/W3v8D6Idn6P8O8K7W3fT9h63fW/v9h53/m+v993X+u+v9N+r9V7v0V7v0L7r0P7L0z7v0D7v0d7t0X7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p0Z7p+D/8vknp2e6O9OdmW7p7kz3/+f/AAU/AH9+5G8TAAAAAElFTkSuQmCC">
-                <p><b>Dr. Sugianto, M.Pd.</b></p>
+        <div class="pdf-sig">
+            <p>Indramayu, <span id="pdf-tgl-skrg">23 Desember 2025</span></p>
+            <p>Ketua Program Studi,</p>
+            <br>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Jon_Kirsch%27s_Signature.png" style="width: 120px; height: auto; opacity: 0.8; margin-left: -10px;">
+            <p><b>Dr. Sugianto, M.Pd.</b></p>
+        </div>
+    </div>
+
+    <div id="auth-screen" class="auth-container">
+        <div id="login-box" class="auth-box">
+            <div style="font-size: 3rem; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-microscope"></i></div>
+            <h3 style="color:var(--primary-dark); margin-bottom:20px;">Sidang Biologi Cloud</h3>
+            <form onsubmit="handleLogin(event)">
+                <input type="text" id="login-user" class="auth-input" placeholder="Username / NPM" required>
+                <input type="password" id="login-pass" class="auth-input" placeholder="Password" required>
+                <button type="submit" class="auth-btn">Masuk ke Sistem</button>
+            </form>
+            <div class="toggle-link" onclick="toggleAuth('register')">Mahasiswa baru? Daftar disini</div>
+        </div>
+        <div id="register-box" class="auth-box" style="display: none;">
+            <h3>Registrasi Mahasiswa</h3>
+            <form onsubmit="handleRegister(event)">
+                <input type="text" id="reg-npm" class="auth-input" placeholder="NPM" required>
+                <input type="text" id="reg-nama" class="auth-input" placeholder="Nama Lengkap" required>
+                <input type="password" id="reg-pass" class="auth-input" placeholder="Password Baru" required>
+                <button type="submit" class="auth-btn">Daftar Akun</button>
+            </form>
+            <div class="toggle-link" onclick="toggleAuth('login')">Sudah punya akun? Login</div>
+        </div>
+    </div>
+
+    <div id="dashboard-app">
+        <div class="sidebar">
+            <div class="brand"><i class="fas fa-dna"></i> Prodi Biologi</div>
+            <div class="user-info">
+                <div id="display-role" style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1px;">ROLE</div>
+                <div id="display-name" style="font-weight:600; font-size:0.95rem;">User Name</div>
+            </div>
+            <div class="menu-list" style="flex:1;">
+                <div class="menu-item" id="menu-jadwal" onclick="showSection('jadwal')"><i class="fas fa-calendar-check"></i> Jadwal & Nilai</div>
+                <div class="menu-item" id="menu-daftar" onclick="showSection('pendaftaran')"><i class="fas fa-edit"></i> Pendaftaran</div>
+                <div class="menu-item" id="menu-admin" onclick="showSection('admin')"><i class="fas fa-user-shield"></i> Control Panel</div>
+                <div class="menu-item" id="menu-data-dosen" onclick="showSection('data-dosen')"><i class="fas fa-users-rectangle"></i> Kelola Dosen</div>
+            </div>
+            <div class="logout-container">
+                <button class="btn-logout" onclick="handleLogout()"><i class="fas fa-power-off"></i> Logout</button>
+            </div>
+        </div>
+
+        <div class="main">
+            <div id="pendaftaran" class="section">
+                <h2>Form Pendaftaran Sidang</h2>
+                <div class="card">
+                    <form id="formDaftar">
+                        <label style="font-size:0.8rem; color:#666;">Data Mahasiswa:</label>
+                        <div class="auth-input" style="background:#f3f4f6; border:none; color:#444;" id="m-info">NPM - Nama</div>
+                        <input type="text" id="judul" class="auth-input" placeholder="Judul Skripsi Lengkap" required>
+                        <label style="font-size:0.8rem;">Dosen Pembimbing 1:</label>
+                        <select id="pembimbing1" class="auth-input" required></select>
+                        <label style="font-size:0.8rem;">Dosen Pembimbing 2:</label>
+                        <select id="pembimbing2" class="auth-input" required></select>
+                        <button type="submit" class="btn-submit">Kirim Pengajuan Sidang</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="jadwal" class="section">
+                <h2 id="title-jadwal">Monitoring Jadwal & Nilai</h2>
+                <div class="card">
+                    <table id="tabelJadwal">
+                        <thead><tr id="headJadwal"></tr></thead>
+                        <tbody id="bodyJadwal"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="admin" class="section">
+                <h2>Admin Control Panel</h2>
+                <div class="card">
+                    <table>
+                        <thead><tr><th>Mahasiswa</th><th>Judul Skripsi</th><th>Status Jadwal</th><th>Opsi</th></tr></thead>
+                        <tbody id="bodyAdmin"></tbody>
+                    </table>
+                    <div style="margin-top:40px; border-top:2px dashed #eee; padding-top:20px;">
+                        <button class="btn-delete" style="width:100%; padding:12px; font-weight:600;" onclick="resetSemuaData()">
+                            <i class="fas fa-triangle-exclamation"></i> RESET DATABASE CLOUD
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="data-dosen" class="section">
+                <h2>Manajemen Data Dosen</h2>
+                <div class="card">
+                    <form onsubmit="addDosen(event)" style="display:grid; grid-template-columns: 1fr 1fr 1fr 100px; gap:10px; margin-bottom:20px;">
+                        <input type="text" id="d-nama" placeholder="Nama & Gelar" class="auth-input" required>
+                        <input type="text" id="d-user" placeholder="Username" class="auth-input" required>
+                        <input type="text" id="d-pass" placeholder="Password" class="auth-input" required>
+                        <button class="btn-submit" style="height:45px;">Simpan</button>
+                    </form>
+                    <table>
+                        <thead><tr><th>Nama Dosen</th><th>Username</th><th>Aksi</th></tr></thead>
+                        <tbody id="bodyDosen"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
+    <div class="modal" id="modalJadwal">
+        <div class="modal-content">
+            <h3>Atur Penjadwalan Sidang</h3>
+            <hr style="margin:15px 0;">
+            <input type="hidden" id="edit-id">
+            <label>Tanggal Sidang:</label><input type="date" id="set-tgl" class="auth-input">
+            <label>Waktu Sidang:</label><input type="time" id="set-jam" class="auth-input">
+            <label>Ketua Penguji (P1):</label><select id="set-p1" class="auth-input"></select>
+            <label>Anggota Penguji (P2):</label><select id="set-p2" class="auth-input"></select>
+            <label>Anggota Penguji (P3):</label><select id="set-p3" class="auth-input"></select>
+            <button onclick="saveJadwalCloud()" class="btn-submit">Terbitkan Jadwal Sidang</button>
+            <button onclick="closeModal()" style="background:#94a3b8; margin-top:10px;" class="btn-submit">Batal</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modalNilai">
+        <div class="modal-content">
+            <h3 id="n-title">Input Nilai Sidang</h3>
+            <hr style="margin:15px 0;">
+            <input type="hidden" id="n-id"><input type="hidden" id="n-role">
+            <label>Skor Angka (0-100):</label>
+            <input type="number" id="n-skor" class="auth-input" placeholder="0-100" min="0" max="100">
+            <label>Catatan Revisi:</label>
+            <textarea id="n-revisi" class="auth-input" style="height:100px; padding-top:10px;"></textarea>
+            <button onclick="saveNilaiCloud()" class="btn-submit">Simpan Nilai Ke Cloud</button>
+            <button onclick="closeModal()" style="background:#94a3b8; margin-top:10px;" class="btn-submit">Batal</button>
+        </div>
+    </div>
+
     <script>
-        // API KEY & URL HARUS TETAP SAMA SEPERTI SEBELUMNYA
-        // ... (Config Firebase) ...
+        const firebaseConfig = {
+            apiKey: "AIzaSyAeKgtwI7Dj1Z_zEXM-4I36u7gJ8ycUEps",
+            authDomain: "sidang-biologi.firebaseapp.com",
+            databaseURL: "https://sidang-biologi-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "sidang-biologi",
+            storageBucket: "sidang-biologi.firebasestorage.app",
+            messagingSenderId: "192936300926",
+            appId: "1:192936300926:web:a6b32847a26c26b5df232f"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let dbSidang = [];
+        let dbDosen = [];
+        let dbUsers = [];
+        let currentUser = JSON.parse(sessionStorage.getItem('sess_bio_cloud'));
+
+        db.ref('sidang').on('value', snap => {
+            dbSidang = snap.val() ? Object.values(snap.val()) : [];
+            renderAll();
+        });
+
+        db.ref('dosen').on('value', snap => {
+            dbDosen = snap.val() ? Object.values(snap.val()) : [];
+            populateDosenSelects();
+            renderAll();
+        });
+
+        db.ref('users').on('value', snap => {
+            dbUsers = snap.val() ? Object.values(snap.val()) : [];
+        });
+
+        function getNilaiHuruf(s) {
+            if (!s || s === 0) return '-';
+            if (s >= 80) return 'A'; if (s >= 75) return 'AB'; if (s >= 70) return 'B';
+            if (s >= 65) return 'BC'; if (s >= 60) return 'C'; if (s >= 50) return 'D';
+            return 'E';
+        }
+
+        function toggleAuth(v) {
+            document.getElementById('login-box').style.display = v === 'login' ? 'block' : 'none';
+            document.getElementById('register-box').style.display = v === 'register' ? 'block' : 'none';
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const npm = document.getElementById('reg-npm').value;
+            db.ref('users/' + npm).set({
+                nama: document.getElementById('reg-nama').value,
+                username: npm,
+                password: document.getElementById('reg-pass').value,
+                role: 'mahasiswa'
+            });
+            alert('Registrasi Mahasiswa Berhasil!');
+            toggleAuth('login');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('login-user').value;
+            const p = document.getElementById('login-pass').value;
+
+            if(u === 'admin' && p === 'samirnawir21') {
+                loginSuccess({nama: 'Super Admin', role: 'admin'}); return;
+            }
+
+            const d = dbDosen.find(x => x.username === u && x.password === p);
+            if(d) { loginSuccess({...d, role: 'dosen'}); return; }
+
+            const m = dbUsers.find(x => x.username === u && x.password === p);
+            if(m) { loginSuccess({...m, role: 'mahasiswa'}); return; }
+
+            alert('Login Gagal!');
+        }
+
+        function loginSuccess(user) {
+            currentUser = user;
+            sessionStorage.setItem('sess_bio_cloud', JSON.stringify(user));
+            initApp();
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('sess_bio_cloud');
+            location.reload();
+        }
+
+        function initApp() {
+            if(!currentUser) return;
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('dashboard-app').style.display = 'flex';
+            document.getElementById('display-name').innerText = currentUser.nama;
+            document.getElementById('display-role').innerText = currentUser.role;
+
+            const mItems = ['menu-jadwal', 'menu-daftar', 'menu-admin', 'menu-data-dosen'];
+            mItems.forEach(i => document.getElementById(i).style.display = 'none');
+
+            if(currentUser.role === 'admin') {
+                mItems.forEach(i => document.getElementById(i).style.display = 'flex');
+                showSection('admin');
+            } else if(currentUser.role === 'dosen') {
+                document.getElementById('menu-jadwal').style.display = 'flex';
+                showSection('jadwal');
+            } else {
+                document.getElementById('menu-jadwal').style.display = 'flex';
+                document.getElementById('menu-daftar').style.display = 'flex';
+                document.getElementById('m-info').innerText = `${currentUser.username} - ${currentUser.nama}`;
+                showSection('pendaftaran');
+            }
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            if(document.getElementById('menu-'+id)) document.getElementById('menu-'+id).classList.add('active');
+            renderAll();
+        }
+
+        function renderAll() {
+            renderJadwal();
+            renderAdmin();
+            renderDosenList();
+        }
+
+        function renderJadwal() {
+            const body = document.getElementById('bodyJadwal');
+            const head = document.getElementById('headJadwal');
+            body.innerHTML = '';
+
+            if(currentUser?.role === 'dosen') {
+                head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Peran & Nilai Anda</th><th>Aksi</th><th>Status</th>`;
+            } else {
+                head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Status/Nilai</th><th>Status Sidang</th>`;
+            }
+
+            let data = dbSidang;
+            if(currentUser?.role === 'dosen') {
+                data = dbSidang.filter(s => 
+                    s.pem1 === currentUser.nama || s.pem2 === currentUser.nama ||
+                    s.penguji.p1 === currentUser.nama || s.penguji.p2 === currentUser.nama || s.penguji.p3 === currentUser.nama
+                );
+            } else if(currentUser?.role === 'mahasiswa') {
+                data = dbSidang.filter(s => s.npm === currentUser.username);
+            }
+
+            data.forEach(s => {
+                if(currentUser?.role === 'dosen') {
+                    let myRoles = [];
+                    if(s.pem1 === currentUser.nama) myRoles.push({k:'pem1', l:'Pembimbing 1'});
+                    if(s.pem2 === currentUser.nama) myRoles.push({k:'pem2', l:'Pembimbing 2'});
+                    if(s.penguji.p1 === currentUser.nama) myRoles.push({k:'p1', l:'Ketua Penguji'});
+                    if(s.penguji.p2 === currentUser.nama) myRoles.push({k:'p2', l:'Penguji 2'});
+                    if(s.penguji.p3 === currentUser.nama) myRoles.push({k:'p3', l:'Penguji 3'});
+
+                    let rolesDetail = myRoles.map(r => {
+                        let skor = s.nilai[r.k] || 0;
+                        return `<div style="margin-bottom:3px;"><b>${r.l}:</b> ${skor} (${getNilaiHuruf(skor)})</div>`;
+                    }).join('');
+
+                    let btns = myRoles.map(r => `
+                        <button class="btn-action btn-edit" style="width:100%; margin-bottom:5px;" onclick="openNilaiModal(${s.id}, '${r.k}', '${r.l}')">
+                            <i class="fas fa-edit"></i> Input ${r.l}
+                        </button>`).join('');
+
+                    body.innerHTML += `
+                        <tr>
+                            <td><b>${s.nama}</b><br><small>${s.npm}</small></td>
+                            <td>${s.jadwal}</td>
+                            <td>${rolesDetail}</td>
+                            <td>${s.status !== 'Pending' ? btns : '<small>Menunggu Jadwal</small>'}</td>
+                            <td><span class="status-badge status-${s.status}">${s.status}</span></td>
+                        </tr>
+                    `;
+                } else {
+                    let nContent = '';
+                    if(currentUser?.role === 'mahasiswa') {
+                        if(s.status === 'Done') {
+                            const totalNilai = (s.nilai.pem1 || 0) + (s.nilai.pem2 || 0) + (s.nilai.p1 || 0) + (s.nilai.p2 || 0) + (s.nilai.p3 || 0);
+                            const avg = (totalNilai / 5).toFixed(2);
+
+                            nContent = `
+                                <table class="sub-table">
+                                    <tr style="background:#f8fafc;"><td colspan="2"><b>Rincian Nilai Bimbingan</b></td></tr>
+                                    <tr><td>Bimbingan 1</td><td><b>${s.nilai.pem1 || 0}</b></td></tr>
+                                    <tr><td>Bimbingan 2</td><td><b>${s.nilai.pem2 || 0}</b></td></tr>
+                                    <tr style="background:#f8fafc;"><td colspan="2"><b>Rincian Nilai Sidang</b></td></tr>
+                                    <tr><td>Ketua Penguji</td><td><b>${s.nilai.p1 || 0}</b></td></tr>
+                                    <tr><td>Anggota 1</td><td><b>${s.nilai.p2 || 0}</b></td></tr>
+                                    <tr><td>Anggota 2</td><td><b>${s.nilai.p3 || 0}</b></td></tr>
+                                    <tr style="background:#ecfdf5; border-top: 2px solid #059669;">
+                                        <td><b>RATA-RATA AKHIR</b></td>
+                                        <td><b style="color:var(--primary); font-size:1rem;">${avg} (${getNilaiHuruf(avg)})</b></td>
+                                    </tr>
+                                </table>
+                                <button class="btn-download" onclick='unduhHasilSidang(${JSON.stringify(s)})'>
+                                    <i class="fas fa-file-pdf"></i> Unduh Hasil Sidang
+                                </button>`;
+                        } else {
+                            nContent = `<span style="font-style:italic; color:#999;">Nilai sedang diproses...</span>`;
+                        }
+                    } else {
+                        nContent = `
+                            <table class="sub-table">
+                                <tr><td>Pem 1: ${s.pem1}</td><td><b>${s.nilai.pem1 || 0}</b></td></tr>
+                                <tr><td>Pem 2: ${s.pem2}</td><td><b>${s.nilai.pem2 || 0}</b></td></tr>
+                                <tr><td>P1: ${s.penguji.p1}</td><td><b>${s.nilai.p1 || 0}</b></td></tr>
+                                <tr><td>P2: ${s.penguji.p2}</td><td><b>${s.nilai.p2 || 0}</b></td></tr>
+                                <tr><td>P3: ${s.penguji.p3}</td><td><b>${s.nilai.p3 || 0}</b></td></tr>
+                            </table>`;
+                    }
+
+                    body.innerHTML += `
+                        <tr>
+                            <td><b>${s.nama}</b><br><small>${s.npm}</small><br><small><i>${s.judul}</i></small></td>
+                            <td>${s.jadwal}</td>
+                            <td>${nContent}</td>
+                            <td><span class="status-badge status-${s.status}">${s.status}</span></td>
+                        </tr>
+                    `;
+                }
+            });
+        }
 
         // ==========================================
-        // FUNGSI UNDUH PDF (VERSI FIX KOP & TTD)
+        // FUNGSI UNDUH PDF (SESUAI LAMPIRAN)
         // ==========================================
         async function unduhHasilSidang(data) {
             const { jsPDF } = window.jspdf;
             
-            // 1. Masukkan data ke Template
+            // Isi data ke template tersembunyi
             const totalNilai = (data.nilai.pem1 || 0) + (data.nilai.pem2 || 0) + (data.nilai.p1 || 0) + (data.nilai.p2 || 0) + (data.nilai.p3 || 0);
             const avg = (totalNilai / 5).toFixed(2);
             const grade = getNilaiHuruf(avg);
@@ -141,31 +479,117 @@
 
             const element = document.getElementById('pdf-template');
             
-            // 2. Proses Capture Menggunakan html2canvas
-            // useCORS: true penting agar gambar dari domain lain bisa terbaca
-            html2canvas(element, { 
-                scale: 3, // Skala tinggi agar hasil PDF tajam (tidak pecah)
-                useCORS: true, 
-                logging: false,
-                allowTaint: true
-            }).then(canvas => {
+            html2canvas(element, { scale: 2 }).then(canvas => {
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jsPDF('p', 'mm', 'a4');
-                
+                const imgProps = pdf.getImageProperties(imgData);
                 const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
                 
                 pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
                 pdf.save(`Hasil_Sidang_${data.npm}.pdf`);
-            }).catch(err => {
-                alert("Gagal membuat PDF. Pastikan koneksi internet stabil.");
-                console.error(err);
             });
         }
 
-        // SISA KODE LAINNYA (handleLogin, renderJadwal, dll) 
-        // TETAP SAMA SEPERTI KODE LENGKAP SEBELUMNYA
-        // ...
+        document.getElementById('formDaftar').onsubmit = function(e) {
+            e.preventDefault();
+            const id = Date.now();
+            db.ref('sidang/' + id).set({
+                id: id, nama: currentUser.nama, npm: currentUser.username, judul: document.getElementById('judul').value,
+                pem1: document.getElementById('pembimbing1').value, pem2: document.getElementById('pembimbing2').value,
+                jadwal: '-', status: 'Pending', penguji: {p1:'-', p2:'-', p3:'-'},
+                nilai: {pem1:0, pem2:0, p1:0, p2:0, p3:0}, revisi: {pem1:'', pem2:'', p1:'', p2:'', p3:''}
+            });
+            alert('Pendaftaran Berhasil!');
+            showSection('jadwal');
+        };
+
+        function renderAdmin() {
+            const body = document.getElementById('bodyAdmin');
+            body.innerHTML = dbSidang.map(s => `
+                <tr>
+                    <td><b>${s.nama}</b><br>${s.npm}</td><td>${s.judul}</td><td>${s.jadwal}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="openJadwalModal(${s.id})"><i class="fas fa-clock"></i></button>
+                        <button class="btn-action btn-delete" onclick="hapusSidang(${s.id})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openJadwalModal(id) {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('modalJadwal').style.display = 'flex';
+        }
+
+        function saveJadwalCloud() {
+            const id = document.getElementById('edit-id').value;
+            db.ref('sidang/' + id).update({
+                jadwal: `${document.getElementById('set-tgl').value} Pukul ${document.getElementById('set-jam').value} WIB`,
+                status: 'Scheduled',
+                penguji: { p1: document.getElementById('set-p1').value, p2: document.getElementById('set-p2').value, p3: document.getElementById('set-p3').value }
+            });
+            closeModal();
+        }
+
+        function openNilaiModal(id, role, label) {
+            const s = dbSidang.find(x => x.id == id);
+            document.getElementById('n-id').value = id;
+            document.getElementById('n-role').value = role;
+            document.getElementById('n-title').innerText = `Input Nilai: ${label} untuk ${s.nama}`;
+            document.getElementById('n-skor').value = s.nilai[role] || '';
+            document.getElementById('n-revisi').value = s.revisi[role] || '';
+            document.getElementById('modalNilai').style.display = 'flex';
+        }
+
+        function saveNilaiCloud() {
+            const id = document.getElementById('n-id').value;
+            const role = document.getElementById('n-role').value;
+            const skor = parseFloat(document.getElementById('n-skor').value) || 0;
+            
+            db.ref(`sidang/${id}/nilai/${role}`).set(skor);
+            db.ref(`sidang/${id}/revisi/${role}`).set(document.getElementById('n-revisi').value);
+            
+            const s = dbSidang.find(x => x.id == id);
+            const n = {...s.nilai, [role]: skor};
+            if(n.pem1 > 0 && n.pem2 > 0 && n.p1 > 0 && n.p2 > 0 && n.p3 > 0) {
+                db.ref(`sidang/${id}/status`).set('Done');
+            }
+            closeModal();
+        }
+
+        function addDosen(e) {
+            e.preventDefault();
+            const u = document.getElementById('d-user').value;
+            db.ref('dosen/' + u).set({
+                nama: document.getElementById('d-nama').value,
+                username: u, password: document.getElementById('d-pass').value
+            });
+            e.target.reset();
+        }
+
+        function renderDosenList() {
+            const body = document.getElementById('bodyDosen');
+            body.innerHTML = dbDosen.map(d => `
+                <tr><td>${d.nama}</td><td>${d.username}</td><td><button class="btn-action btn-delete" onclick="db.ref('dosen/${d.username}').remove()">Hapus</button></td></tr>
+            `).join('');
+        }
+
+        function populateDosenSelects() {
+            let opts = '<option value="-">-- Pilih Dosen --</option>' + dbDosen.map(d => `<option value="${d.nama}">${d.nama}</option>`).join('');
+            ['pembimbing1','pembimbing2','set-p1','set-p2','set-p3'].forEach(id => {
+                if(document.getElementById(id)) document.getElementById(id).innerHTML = opts;
+            });
+        }
+
+        function hapusSidang(id) { if(confirm('Hapus?')) db.ref('sidang/'+id).remove(); }
+        function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
+        function resetSemuaData() {
+            const code = Math.random().toString(36).substring(7).toUpperCase();
+            if(prompt(`Ketik "${code}" untuk reset database:`) === code) db.ref('sidang').remove();
+        }
+
+        if(currentUser) initApp();
     </script>
 </body>
 </html>
