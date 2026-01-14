@@ -10,6 +10,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
         :root { --primary: #059669; --primary-dark: #047857; --bg: #f3f4f6; --white: #ffffff; --text: #1f2937; --sidebar-width: 260px; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
@@ -45,7 +48,6 @@
         .sub-table { width: 100%; background: #fefefe; border: 1px solid #eee; border-radius: 4px; }
         .sub-table td { padding: 5px 10px; border: none; font-size: 0.85rem; }
 
-        /* BADGES & BUTTONS */
         .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
         .status-Pending { background: #fef3c7; color: #d97706; }
         .status-Scheduled { background: #d1fae5; color: #059669; }
@@ -54,15 +56,52 @@
         .btn-action { border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px; color: white; font-size: 0.8rem; }
         .btn-edit { background: #2563eb; } 
         .btn-delete { background: #ef4444; }
+        .btn-download { background: #8b5cf6; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; margin-top: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-submit { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: 600; }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; padding: 30px; border-radius: 12px; width: 500px; max-height: 90vh; overflow-y: auto; }
         .section { display: none; }
         .section.active { display: block; }
+
+        /* PDF TEMPLATE HIDDEN */
+        #pdf-template { position: absolute; left: -9999px; top: 0; width: 210mm; padding: 20mm; background: white; color: black; font-family: 'Times New Roman', Times, serif; }
+        .pdf-header { text-align: center; border-bottom: 3px solid black; padding-bottom: 10px; margin-bottom: 20px; }
+        .pdf-body { font-size: 12pt; line-height: 1.6; text-align: justify; }
+        .pdf-sig { margin-top: 50px; float: right; text-align: left; width: 250px; }
     </style>
 </head>
 <body>
+
+    <div id="pdf-template">
+        <div class="pdf-header">
+            <h3 style="margin:0;">UNIVERSITAS WIRALODRA</h3>
+            <h4 style="margin:0;">FAKULTAS KEGURUAN DAN ILMU PENDIDIKAN</h4>
+            <h4 style="margin:0;">PROGRAM STUDI PENDIDIKAN BIOLOGI</h4>
+            <p style="font-size: 8pt; margin: 5px 0;">Terakreditasi Baik Sekali LAMDIK Nomor: 194/LAMDIK/Ak/S/1/2023</p>
+            <p style="font-size: 8pt; margin:0;">Jl. Ir. H. Djuanda Km. 3 Indramayu 45213 Telp. (0234) 271885</p>
+        </div>
+        <div class="pdf-body">
+            <p style="text-align: left;">Nomor : <span id="pdf-nomor">69/N/Bio-FKIP/XII/2025</span></p>
+            <p style="text-align: left;">Perihal : Hasil Sidang Skripsi</p>
+            <br>
+            <p>Yth. Sdr. <b id="pdf-nama-mhs">NAMA MAHASISWA</b></p>
+            <p>Peserta Sidang Skripsi</p>
+            <p>Program Studi Pendidikan Biologi</p>
+            <p>FKIP Unwir</p>
+            <br>
+            <p>Berdasarkan hasil penilaian Tim Penguji atas penampilan Saudara pada Sidang Skripsi yang dilaksanakan. Saudara dinyatakan <b>Lulus</b> dengan nilai <b>(<span id="pdf-grade">A</span>) (<span id="pdf-skor">80.00</span>)</b> pada Program Studi Pendidikan Biologi FKIP Universitas Wiralodra.</p>
+            <br>
+            <p>Kami ucapkan selamat kepada Saudara yang dinyatakan lulus dan jangan berkecil hati bersemangatlah kembali bagi Saudara yang dinyatakan tidak lulus.</p>
+        </div>
+        <div class="pdf-sig">
+            <p>Indramayu, <span id="pdf-tgl-skrg">23 Desember 2025</span></p>
+            <p>Ketua Program Studi,</p>
+            <br>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Jon_Kirsch%27s_Signature.png" style="width: 120px; height: auto; opacity: 0.8; margin-left: -10px;">
+            <p><b>Dr. Sugianto, M.Pd.</b></p>
+        </div>
+    </div>
 
     <div id="auth-screen" class="auth-container">
         <div id="login-box" class="auth-box">
@@ -195,9 +234,6 @@
     </div>
 
     <script>
-        // ==========================================
-        // KONFIGURASI FIREBASE
-        // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyAeKgtwI7Dj1Z_zEXM-4I36u7gJ8ycUEps",
             authDomain: "sidang-biologi.firebaseapp.com",
@@ -323,9 +359,6 @@
             renderDosenList();
         }
 
-        // ==========================================
-        // RENDER JADWAL (UPDATE: NILAI BIMBINGAN + RATA2)
-        // ==========================================
         function renderJadwal() {
             const body = document.getElementById('bodyJadwal');
             const head = document.getElementById('headJadwal');
@@ -379,15 +412,14 @@
                     let nContent = '';
                     if(currentUser?.role === 'mahasiswa') {
                         if(s.status === 'Done') {
-                            // Kalkulasi Rata-rata dari 5 komponen: Pem1, Pem2, P1, P2, P3
                             const totalNilai = (s.nilai.pem1 || 0) + (s.nilai.pem2 || 0) + (s.nilai.p1 || 0) + (s.nilai.p2 || 0) + (s.nilai.p3 || 0);
-                            const avg = (totalNilai / 5).toFixed(1);
+                            const avg = (totalNilai / 5).toFixed(2);
 
                             nContent = `
                                 <table class="sub-table">
                                     <tr style="background:#f8fafc;"><td colspan="2"><b>Rincian Nilai Bimbingan</b></td></tr>
-                                    <tr><td>Bimbingan 1 (${s.pem1})</td><td><b>${s.nilai.pem1 || 0}</b></td></tr>
-                                    <tr><td>Bimbingan 2 (${s.pem2})</td><td><b>${s.nilai.pem2 || 0}</b></td></tr>
+                                    <tr><td>Bimbingan 1</td><td><b>${s.nilai.pem1 || 0}</b></td></tr>
+                                    <tr><td>Bimbingan 2</td><td><b>${s.nilai.pem2 || 0}</b></td></tr>
                                     <tr style="background:#f8fafc;"><td colspan="2"><b>Rincian Nilai Sidang</b></td></tr>
                                     <tr><td>Ketua Penguji</td><td><b>${s.nilai.p1 || 0}</b></td></tr>
                                     <tr><td>Anggota 1</td><td><b>${s.nilai.p2 || 0}</b></td></tr>
@@ -396,9 +428,12 @@
                                         <td><b>RATA-RATA AKHIR</b></td>
                                         <td><b style="color:var(--primary); font-size:1rem;">${avg} (${getNilaiHuruf(avg)})</b></td>
                                     </tr>
-                                </table>`;
+                                </table>
+                                <button class="btn-download" onclick='unduhHasilSidang(${JSON.stringify(s)})'>
+                                    <i class="fas fa-file-pdf"></i> Unduh Hasil Sidang
+                                </button>`;
                         } else {
-                            nContent = `<span style="font-style:italic; color:#999;">Nilai sedang diproses oleh Tim Pembimbing & Penguji...</span>`;
+                            nContent = `<span style="font-style:italic; color:#999;">Nilai sedang diproses...</span>`;
                         }
                     } else {
                         nContent = `
@@ -420,6 +455,39 @@
                         </tr>
                     `;
                 }
+            });
+        }
+
+        // ==========================================
+        // FUNGSI UNDUH PDF (SESUAI LAMPIRAN)
+        // ==========================================
+        async function unduhHasilSidang(data) {
+            const { jsPDF } = window.jspdf;
+            
+            // Isi data ke template tersembunyi
+            const totalNilai = (data.nilai.pem1 || 0) + (data.nilai.pem2 || 0) + (data.nilai.p1 || 0) + (data.nilai.p2 || 0) + (data.nilai.p3 || 0);
+            const avg = (totalNilai / 5).toFixed(2);
+            const grade = getNilaiHuruf(avg);
+
+            document.getElementById('pdf-nama-mhs').innerText = data.nama.toUpperCase();
+            document.getElementById('pdf-grade').innerText = grade;
+            document.getElementById('pdf-skor').innerText = avg;
+            
+            const skrg = new Date();
+            const bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            document.getElementById('pdf-tgl-skrg').innerText = `${skrg.getDate()} ${bulan[skrg.getMonth()]} ${skrg.getFullYear()}`;
+
+            const element = document.getElementById('pdf-template');
+            
+            html2canvas(element, { scale: 2 }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save(`Hasil_Sidang_${data.npm}.pdf`);
             });
         }
 
@@ -477,14 +545,13 @@
         function saveNilaiCloud() {
             const id = document.getElementById('n-id').value;
             const role = document.getElementById('n-role').value;
-            const skor = parseInt(document.getElementById('n-skor').value) || 0;
+            const skor = parseFloat(document.getElementById('n-skor').value) || 0;
             
             db.ref(`sidang/${id}/nilai/${role}`).set(skor);
             db.ref(`sidang/${id}/revisi/${role}`).set(document.getElementById('n-revisi').value);
             
             const s = dbSidang.find(x => x.id == id);
             const n = {...s.nilai, [role]: skor};
-            // Otomatis Done jika semua (Pem1, Pem2, P1, P2, P3) sudah mengisi nilai (di atas 0)
             if(n.pem1 > 0 && n.pem2 > 0 && n.p1 > 0 && n.p2 > 0 && n.p3 > 0) {
                 db.ref(`sidang/${id}/status`).set('Done');
             }
