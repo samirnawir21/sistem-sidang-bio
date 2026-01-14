@@ -216,7 +216,6 @@
         let dbUsers = [];
         let currentUser = JSON.parse(sessionStorage.getItem('sess_bio_cloud'));
 
-        // SYNC REAL-TIME
         db.ref('sidang').on('value', snap => {
             dbSidang = snap.val() ? Object.values(snap.val()) : [];
             renderAll();
@@ -232,7 +231,6 @@
             dbUsers = snap.val() ? Object.values(snap.val()) : [];
         });
 
-        // HELPER GRADE
         function getNilaiHuruf(s) {
             if (!s || s === 0) return '-';
             if (s >= 80) return 'A'; if (s >= 75) return 'AB'; if (s >= 70) return 'B';
@@ -240,7 +238,6 @@
             return 'E';
         }
 
-        // AUTH SYSTEM
         function toggleAuth(v) {
             document.getElementById('login-box').style.display = v === 'login' ? 'block' : 'none';
             document.getElementById('register-box').style.display = v === 'register' ? 'block' : 'none';
@@ -274,7 +271,7 @@
             const m = dbUsers.find(x => x.username === u && x.password === p);
             if(m) { loginSuccess({...m, role: 'mahasiswa'}); return; }
 
-            alert('Login Gagal! Cek kembali akun Anda.');
+            alert('Login Gagal!');
         }
 
         function loginSuccess(user) {
@@ -327,21 +324,19 @@
         }
 
         // ==========================================
-        // RENDER JADWAL (UPDATE: PRIVASI MAHASISWA)
+        // RENDER JADWAL (UPDATE: NILAI BIMBINGAN + RATA2)
         // ==========================================
         function renderJadwal() {
             const body = document.getElementById('bodyJadwal');
             const head = document.getElementById('headJadwal');
             body.innerHTML = '';
 
-            // Update Header Tabel Berdasarkan Role
             if(currentUser?.role === 'dosen') {
                 head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Peran & Nilai Anda</th><th>Aksi</th><th>Status</th>`;
             } else {
                 head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Status/Nilai</th><th>Status Sidang</th>`;
             }
 
-            // FILTER DATA (INILAH PEMBATAS PRIVASINYA)
             let data = dbSidang;
             if(currentUser?.role === 'dosen') {
                 data = dbSidang.filter(s => 
@@ -349,13 +344,11 @@
                     s.penguji.p1 === currentUser.nama || s.penguji.p2 === currentUser.nama || s.penguji.p3 === currentUser.nama
                 );
             } else if(currentUser?.role === 'mahasiswa') {
-                // MAHASISWA HANYA MELIHAT DATANYA SENDIRI
                 data = dbSidang.filter(s => s.npm === currentUser.username);
             }
 
             data.forEach(s => {
                 if(currentUser?.role === 'dosen') {
-                    // LOGIKA TAMPILAN DOSEN
                     let myRoles = [];
                     if(s.pem1 === currentUser.nama) myRoles.push({k:'pem1', l:'Pembimbing 1'});
                     if(s.pem2 === currentUser.nama) myRoles.push({k:'pem2', l:'Pembimbing 2'});
@@ -383,25 +376,35 @@
                         </tr>
                     `;
                 } else {
-                    // LOGIKA TAMPILAN ADMIN ATAU MAHASISWA
                     let nContent = '';
                     if(currentUser?.role === 'mahasiswa') {
                         if(s.status === 'Done') {
-                            const avg = ((s.nilai.p1 + s.nilai.p2 + s.nilai.p3) / 3).toFixed(1);
+                            // Kalkulasi Rata-rata dari 5 komponen: Pem1, Pem2, P1, P2, P3
+                            const totalNilai = (s.nilai.pem1 || 0) + (s.nilai.pem2 || 0) + (s.nilai.p1 || 0) + (s.nilai.p2 || 0) + (s.nilai.p3 || 0);
+                            const avg = (totalNilai / 5).toFixed(1);
+
                             nContent = `
                                 <table class="sub-table">
-                                    <tr><td>Ketua Penguji</td><td><b>${s.nilai.p1}</b></td></tr>
-                                    <tr><td>Anggota 1</td><td><b>${s.nilai.p2}</b></td></tr>
-                                    <tr><td>Anggota 2</td><td><b>${s.nilai.p3}</b></td></tr>
-                                    <tr style="background:#f0fdf4;"><td><b>RATA-RATA</b></td><td><b style="color:var(--primary);">${avg} (${getNilaiHuruf(avg)})</b></td></tr>
+                                    <tr style="background:#f8fafc;"><td colspan="2"><b>Rincian Nilai Bimbingan</b></td></tr>
+                                    <tr><td>Bimbingan 1 (${s.pem1})</td><td><b>${s.nilai.pem1 || 0}</b></td></tr>
+                                    <tr><td>Bimbingan 2 (${s.pem2})</td><td><b>${s.nilai.pem2 || 0}</b></td></tr>
+                                    <tr style="background:#f8fafc;"><td colspan="2"><b>Rincian Nilai Sidang</b></td></tr>
+                                    <tr><td>Ketua Penguji</td><td><b>${s.nilai.p1 || 0}</b></td></tr>
+                                    <tr><td>Anggota 1</td><td><b>${s.nilai.p2 || 0}</b></td></tr>
+                                    <tr><td>Anggota 2</td><td><b>${s.nilai.p3 || 0}</b></td></tr>
+                                    <tr style="background:#ecfdf5; border-top: 2px solid #059669;">
+                                        <td><b>RATA-RATA AKHIR</b></td>
+                                        <td><b style="color:var(--primary); font-size:1rem;">${avg} (${getNilaiHuruf(avg)})</b></td>
+                                    </tr>
                                 </table>`;
                         } else {
-                            nContent = `<span style="font-style:italic; color:#999;">Nilai diproses penguji...</span>`;
+                            nContent = `<span style="font-style:italic; color:#999;">Nilai sedang diproses oleh Tim Pembimbing & Penguji...</span>`;
                         }
                     } else {
-                        // Admin melihat monitor nilai lengkap
                         nContent = `
                             <table class="sub-table">
+                                <tr><td>Pem 1: ${s.pem1}</td><td><b>${s.nilai.pem1 || 0}</b></td></tr>
+                                <tr><td>Pem 2: ${s.pem2}</td><td><b>${s.nilai.pem2 || 0}</b></td></tr>
                                 <tr><td>P1: ${s.penguji.p1}</td><td><b>${s.nilai.p1 || 0}</b></td></tr>
                                 <tr><td>P2: ${s.penguji.p2}</td><td><b>${s.nilai.p2 || 0}</b></td></tr>
                                 <tr><td>P3: ${s.penguji.p3}</td><td><b>${s.nilai.p3 || 0}</b></td></tr>
@@ -420,9 +423,6 @@
             });
         }
 
-        // ==========================================
-        // ACTIONS & DATABASE LOGIC
-        // ==========================================
         document.getElementById('formDaftar').onsubmit = function(e) {
             e.preventDefault();
             const id = Date.now();
@@ -432,7 +432,7 @@
                 jadwal: '-', status: 'Pending', penguji: {p1:'-', p2:'-', p3:'-'},
                 nilai: {pem1:0, pem2:0, p1:0, p2:0, p3:0}, revisi: {pem1:'', pem2:'', p1:'', p2:'', p3:''}
             });
-            alert('Pendaftaran sidang berhasil dikirim!');
+            alert('Pendaftaran Berhasil!');
             showSection('jadwal');
         };
 
@@ -483,9 +483,9 @@
             db.ref(`sidang/${id}/revisi/${role}`).set(document.getElementById('n-revisi').value);
             
             const s = dbSidang.find(x => x.id == id);
-            const check = {...s.nilai, [role]: skor};
-            // Otomatis Done jika P1, P2, dan P3 sudah memberi nilai
-            if(check.p1 > 0 && check.p2 > 0 && check.p3 > 0) {
+            const n = {...s.nilai, [role]: skor};
+            // Otomatis Done jika semua (Pem1, Pem2, P1, P2, P3) sudah mengisi nilai (di atas 0)
+            if(n.pem1 > 0 && n.pem2 > 0 && n.p1 > 0 && n.p2 > 0 && n.p3 > 0) {
                 db.ref(`sidang/${id}/status`).set('Done');
             }
             closeModal();
@@ -515,9 +515,8 @@
             });
         }
 
-        function hapusSidang(id) { if(confirm('Hapus data pendaftaran ini?')) db.ref('sidang/'+id).remove(); }
+        function hapusSidang(id) { if(confirm('Hapus?')) db.ref('sidang/'+id).remove(); }
         function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
-        
         function resetSemuaData() {
             const code = Math.random().toString(36).substring(7).toUpperCase();
             if(prompt(`Ketik "${code}" untuk reset database:`) === code) db.ref('sidang').remove();
