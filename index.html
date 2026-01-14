@@ -124,10 +124,10 @@
             </div>
 
             <div id="jadwal" class="section">
-                <h2>Jadwal & Hasil Sidang</h2>
+                <h2 id="title-jadwal">Jadwal & Hasil Sidang</h2>
                 <div class="card">
                     <table id="tabelJadwal">
-                        <thead><tr><th>Mahasiswa</th><th>Waktu</th><th>Penguji & Nilai</th><th>Status</th></tr></thead>
+                        <thead><tr id="headJadwal"></tr></thead>
                         <tbody id="bodyJadwal"></tbody>
                     </table>
                 </div>
@@ -191,30 +191,29 @@
 
     <script>
         // ==========================================
-        // KONFIGURASI FIREBASE (GANTI DENGAN PUNYAMU)
+        // KONFIGURASI FIREBASE
         // ==========================================
         const firebaseConfig = {
-  apiKey: "AIzaSyAeKgtwI7Dj1Z_zEXM-4I36u7gJ8ycUEps",
-  authDomain: "sidang-biologi.firebaseapp.com",
-  databaseURL: "https://sidang-biologi-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "sidang-biologi",
-  storageBucket: "sidang-biologi.firebasestorage.app",
-  messagingSenderId: "192936300926",
-  appId: "1:192936300926:web:a6b32847a26c26b5df232f",
-  measurementId: "G-J8SVDQ6CY1"
-};
+            apiKey: "AIzaSyAeKgtwI7Dj1Z_zEXM-4I36u7gJ8ycUEps",
+            authDomain: "sidang-biologi.firebaseapp.com",
+            databaseURL: "https://sidang-biologi-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "sidang-biologi",
+            storageBucket: "sidang-biologi.firebasestorage.app",
+            messagingSenderId: "192936300926",
+            appId: "1:192936300926:web:a6b32847a26c26b5df232f",
+            measurementId: "G-J8SVDQ6CY1"
+        };
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Variabel State
         let dbSidang = [];
         let dbDosen = [];
         let dbUsers = [];
         let currentUser = JSON.parse(localStorage.getItem('sess_bio_cloud'));
 
         // ==========================================
-        // SYNC DATA DARI CLOUD (REAL-TIME)
+        // SYNC DATA (REAL-TIME)
         // ==========================================
         db.ref('sidang').on('value', snap => {
             dbSidang = snap.val() ? Object.values(snap.val()) : [];
@@ -232,7 +231,21 @@
         });
 
         // ==========================================
-        // FUNGSI AUTH
+        // HELPER FUNGSI
+        // ==========================================
+        function getNilaiHuruf(skor) {
+            if (!skor || skor === 0) return '-';
+            if (skor >= 80) return 'A';
+            if (skor >= 75) return 'AB';
+            if (skor >= 70) return 'B';
+            if (skor >= 65) return 'BC';
+            if (skor >= 60) return 'C';
+            if (skor >= 50) return 'D';
+            return 'E';
+        }
+
+        // ==========================================
+        // AUTH LOGIC
         // ==========================================
         function toggleAuth(view) {
             document.getElementById('login-box').style.display = view === 'login' ? 'block' : 'none';
@@ -258,21 +271,18 @@
             const u = document.getElementById('login-user').value;
             const p = document.getElementById('login-pass').value;
 
-            // Admin Check
             if(u === 'admin' && p === 'samirnawir21') {
                 loginSuccess({nama: 'Administrator', role: 'admin'});
                 return;
             }
 
-            // Dosen Check
             const d = dbDosen.find(x => x.username === u && x.password === p);
             if(d) { loginSuccess({...d, role: 'dosen'}); return; }
 
-            // Mahasiswa Check
             const m = dbUsers.find(x => x.username === u && x.password === p);
             if(m) { loginSuccess({...m, role: 'mahasiswa'}); return; }
 
-            alert('Login Gagal! Periksa Username/Password');
+            alert('Login Gagal!');
         }
 
         function loginSuccess(user) {
@@ -287,7 +297,7 @@
         }
 
         // ==========================================
-        // INTI APLIKASI
+        // CORE APP LOGIC
         // ==========================================
         function initApp() {
             if(!currentUser) return;
@@ -328,33 +338,20 @@
         }
 
         // ==========================================
-        // LOGIK PENDAFTARAN & JADWAL
+        // RENDER JADWAL (UPDATE: DOSEN VIEW)
         // ==========================================
-        document.getElementById('formDaftar').onsubmit = function(e) {
-            e.preventDefault();
-            const id = Date.now();
-            const data = {
-                id: id,
-                nama: currentUser.nama,
-                npm: currentUser.username,
-                judul: document.getElementById('judul').value,
-                pem1: document.getElementById('pembimbing1').value,
-                pem2: document.getElementById('pembimbing2').value,
-                jadwal: '-',
-                status: 'Pending',
-                penguji: {p1:'-', p2:'-', p3:'-'},
-                nilai: {pem1:0, pem2:0, p1:0, p2:0, p3:0},
-                revisi: {pem1:'', pem2:'', p1:'', p2:'', p3:''}
-            };
-            db.ref('sidang/' + id).set(data);
-            alert('Pendaftaran Berhasil Terkirim ke Cloud!');
-            showSection('jadwal');
-        };
-
         function renderJadwal() {
             const body = document.getElementById('bodyJadwal');
+            const head = document.getElementById('headJadwal');
             body.innerHTML = '';
-            
+
+            // Set Header Table
+            if(currentUser?.role === 'dosen') {
+                head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Peran Anda</th><th>Nilai Angka</th><th>Nilai Huruf</th><th>Status</th>`;
+            } else {
+                head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Penguji & Nilai</th><th>Status</th>`;
+            }
+
             let filtered = dbSidang;
             if(currentUser?.role === 'dosen') {
                 filtered = dbSidang.filter(s => 
@@ -364,62 +361,80 @@
             }
 
             filtered.forEach(s => {
-                const isMyMhs = currentUser?.role === 'dosen';
-                let actionBtn = '';
-                
-                // Cek Peran Dosen untuk input nilai
-                if(isMyMhs) {
-                    const roles = [];
-                    if(s.pem1 === currentUser.nama) roles.push({k:'pem1', l:'Pembimbing 1'});
-                    if(s.pem2 === currentUser.nama) roles.push({k:'pem2', l:'Pembimbing 2'});
-                    if(s.penguji.p1 === currentUser.nama) roles.push({k:'p1', l:'Penguji 1 (Ketua)'});
-                    if(s.penguji.p2 === currentUser.nama) roles.push({k:'p2', l:'Penguji 2'});
-                    if(s.penguji.p3 === currentUser.nama) roles.push({k:'p3', l:'Penguji 3'});
+                if(currentUser?.role === 'dosen') {
+                    // Logic Khusus Dosen
+                    let roles = [];
+                    let score = 0;
+                    if(s.pem1 === currentUser.nama) { roles.push({k:'pem1', l:'Pembimbing 1'}); score = s.nilai.pem1; }
+                    if(s.pem2 === currentUser.nama) { roles.push({k:'pem2', l:'Pembimbing 2'}); score = s.nilai.pem2; }
+                    if(s.penguji.p1 === currentUser.nama) { roles.push({k:'p1', l:'Ketua Penguji'}); score = s.nilai.p1; }
+                    if(s.penguji.p2 === currentUser.nama) { roles.push({k:'p2', l:'Penguji 2'}); score = s.nilai.p2; }
+                    if(s.penguji.p3 === currentUser.nama) { roles.push({k:'p3', l:'Penguji 3'}); score = s.nilai.p3; }
 
-                    roles.forEach(r => {
-                        actionBtn += `<button class="btn-action btn-edit" onclick="openNilaiModal(${s.id}, '${r.k}', '${r.l}')">Input ${r.l}</button><br>`;
-                    });
+                    let actionBtn = roles.map(r => `<button class="btn-action btn-edit" onclick="openNilaiModal(${s.id}, '${r.k}', '${r.l}')"><i class="fas fa-edit"></i> Input ${r.l}</button>`).join('<br>');
+
+                    body.innerHTML += `
+                        <tr>
+                            <td><b>${s.nama}</b><br>${s.npm}<br><small>${s.judul}</small></td>
+                            <td>${s.jadwal}</td>
+                            <td><span style="color:var(--primary-dark); font-weight:600;">${roles.map(r=>r.l).join(' & ')}</span></td>
+                            <td><b>${score || '-'}</b></td>
+                            <td><b>${getNilaiHuruf(score)}</b></td>
+                            <td>
+                                <span class="status-badge status-${s.status}">${s.status}</span>
+                                <div style="margin-top:5px">${s.status !== 'Pending' ? actionBtn : ''}</div>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    // Logic Admin & Mahasiswa
+                    body.innerHTML += `
+                        <tr>
+                            <td><b>${s.nama}</b><br>${s.npm}<br><small>${s.judul}</small></td>
+                            <td>${s.jadwal}</td>
+                            <td>
+                                <table class="sub-table">
+                                    <tr><td>P1: ${s.penguji.p1}</td><td><b>${s.nilai.p1 || '-'}</b></td></tr>
+                                    <tr><td>P2: ${s.penguji.p2}</td><td><b>${s.nilai.p2 || '-'}</b></td></tr>
+                                    <tr><td>P3: ${s.penguji.p3}</td><td><b>${s.nilai.p3 || '-'}</b></td></tr>
+                                </table>
+                            </td>
+                            <td><span class="status-badge status-${s.status}">${s.status}</span></td>
+                        </tr>
+                    `;
                 }
-
-                body.innerHTML += `
-                    <tr>
-                        <td><b>${s.nama}</b><br>${s.npm}<br><small>${s.judul}</small></td>
-                        <td>${s.jadwal}</td>
-                        <td>
-                            <table class="sub-table">
-                                <tr><td>P1: ${s.penguji.p1}</td><td><b>${s.nilai.p1 || '-'}</b></td></tr>
-                                <tr><td>P2: ${s.penguji.p2}</td><td><b>${s.nilai.p2 || '-'}</b></td></tr>
-                                <tr><td>P3: ${s.penguji.p3}</td><td><b>${s.nilai.p3 || '-'}</b></td></tr>
-                            </table>
-                            ${actionBtn}
-                        </td>
-                        <td><span class="status-badge status-${s.status}">${s.status}</span></td>
-                    </tr>
-                `;
             });
         }
+
+        // ==========================================
+        // DATA MANAGEMENT
+        // ==========================================
+        document.getElementById('formDaftar').onsubmit = function(e) {
+            e.preventDefault();
+            const id = Date.now();
+            db.ref('sidang/' + id).set({
+                id: id, nama: currentUser.nama, npm: currentUser.username, judul: document.getElementById('judul').value,
+                pem1: document.getElementById('pembimbing1').value, pem2: document.getElementById('pembimbing2').value,
+                jadwal: '-', status: 'Pending', penguji: {p1:'-', p2:'-', p3:'-'},
+                nilai: {pem1:0, pem2:0, p1:0, p2:0, p3:0}, revisi: {pem1:'', pem2:'', p1:'', p2:'', p3:''}
+            });
+            alert('Pendaftaran Berhasil!');
+            showSection('jadwal');
+        };
 
         function renderAdmin() {
             const body = document.getElementById('bodyAdmin');
-            body.innerHTML = '';
-            dbSidang.forEach(s => {
-                body.innerHTML += `
-                    <tr>
-                        <td>${s.nama}</td>
-                        <td>${s.judul}</td>
-                        <td>${s.jadwal}</td>
-                        <td>
-                            <button class="btn-action btn-edit" onclick="openJadwalModal(${s.id})"><i class="fas fa-calendar"></i></button>
-                            <button class="btn-action btn-delete" onclick="hapusSidang(${s.id})"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
+            body.innerHTML = dbSidang.map(s => `
+                <tr>
+                    <td>${s.nama}</td><td>${s.judul}</td><td>${s.jadwal}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="openJadwalModal(${s.id})"><i class="fas fa-calendar"></i></button>
+                        <button class="btn-action btn-delete" onclick="hapusSidang(${s.id})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        // ==========================================
-        // MODALS & HELPERS
-        // ==========================================
         function openJadwalModal(id) {
             document.getElementById('edit-id').value = id;
             document.getElementById('modalJadwal').style.display = 'flex';
@@ -427,19 +442,11 @@
 
         function saveJadwalCloud() {
             const id = document.getElementById('edit-id').value;
-            const tgl = document.getElementById('set-tgl').value;
-            const jam = document.getElementById('set-jam').value;
-            
-            const up = {
-                jadwal: `${tgl} Pukul ${jam} WIB`,
+            db.ref('sidang/' + id).update({
+                jadwal: `${document.getElementById('set-tgl').value} Pukul ${document.getElementById('set-jam').value} WIB`,
                 status: 'Scheduled',
-                penguji: {
-                    p1: document.getElementById('set-p1').value,
-                    p2: document.getElementById('set-p2').value,
-                    p3: document.getElementById('set-p3').value
-                }
-            };
-            db.ref('sidang/' + id).update(up);
+                penguji: { p1: document.getElementById('set-p1').value, p2: document.getElementById('set-p2').value, p3: document.getElementById('set-p3').value }
+            });
             closeModal();
         }
 
@@ -447,7 +454,7 @@
             const s = dbSidang.find(x => x.id == id);
             document.getElementById('n-id').value = id;
             document.getElementById('n-role').value = role;
-            document.getElementById('n-title').innerText = `Nilai: ${label} - ${s.nama}`;
+            document.getElementById('n-title').innerText = `Input: ${label} - ${s.nama}`;
             document.getElementById('n-skor').value = s.nilai[role] || '';
             document.getElementById('n-revisi').value = s.revisi[role] || '';
             document.getElementById('modalNilai').style.display = 'flex';
@@ -457,59 +464,39 @@
             const id = document.getElementById('n-id').value;
             const role = document.getElementById('n-role').value;
             const skor = parseInt(document.getElementById('n-skor').value);
-            const rev = document.getElementById('n-revisi').value;
-
             db.ref(`sidang/${id}/nilai/${role}`).set(skor);
-            db.ref(`sidang/${id}/revisi/${role}`).set(rev);
+            db.ref(`sidang/${id}/revisi/${role}`).set(document.getElementById('n-revisi').value);
             
-            // Cek jika semua nilai sudah masuk, set status Done
             const s = dbSidang.find(x => x.id == id);
             const n = {...s.nilai, [role]: skor};
-            if(n.p1 > 0 && n.p2 > 0 && n.p3 > 0) {
-                db.ref(`sidang/${id}/status`).set('Done');
-            }
-
+            if(n.p1 > 0 && n.p2 > 0 && n.p3 > 0) db.ref(`sidang/${id}/status`).set('Done');
             closeModal();
         }
 
         function addDosen(e) {
             e.preventDefault();
-            const user = document.getElementById('d-user').value;
-            const data = {
-                nama: document.getElementById('d-nama').value,
-                username: user,
-                password: document.getElementById('d-pass').value
-            };
-            db.ref('dosen/' + user).set(data);
+            const u = document.getElementById('d-user').value;
+            db.ref('dosen/' + u).set({ nama: document.getElementById('d-nama').value, username: u, password: document.getElementById('d-pass').value });
             e.target.reset();
         }
 
         function renderDosenList() {
             const body = document.getElementById('bodyDosen');
-            body.innerHTML = dbDosen.map(d => `
-                <tr><td>${d.nama}</td><td>${d.username}</td><td><button onclick="db.ref('dosen/${d.username}').remove()">Hapus</button></td></tr>
-            `).join('');
+            body.innerHTML = dbDosen.map(d => `<tr><td>${d.nama}</td><td>${d.username}</td><td><button onclick="db.ref('dosen/${d.username}').remove()">Hapus</button></td></tr>`).join('');
         }
 
         function populateDosenSelects() {
-            let opts = '<option value="-">-- Pilih Dosen --</option>';
-            dbDosen.forEach(d => opts += `<option value="${d.nama}">${d.nama}</option>`);
-            ['pembimbing1','pembimbing2','set-p1','set-p2','set-p3'].forEach(id => {
-                if(document.getElementById(id)) document.getElementById(id).innerHTML = opts;
-            });
+            let opts = '<option value="-">-- Pilih Dosen --</option>' + dbDosen.map(d => `<option value="${d.nama}">${d.nama}</option>`).join('');
+            ['pembimbing1','pembimbing2','set-p1','set-p2','set-p3'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerHTML = opts; });
         }
 
-        function hapusSidang(id) { if(confirm('Hapus data ini?')) db.ref('sidang/'+id).remove(); }
+        function hapusSidang(id) { if(confirm('Hapus?')) db.ref('sidang/'+id).remove(); }
         function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
         function resetSemuaData() {
             const code = Math.random().toString(36).substring(7).toUpperCase();
-            if(prompt(`Ketik ${code} untuk hapus SEMUA data CLOUD:`) === code) {
-                db.ref('sidang').remove();
-                alert('Data Terhapus');
-            }
+            if(prompt(`Ketik ${code} untuk hapus semua:`) === code) db.ref('sidang').remove();
         }
 
-        // Jalankan awal
         if(currentUser) initApp();
     </script>
 </body>
