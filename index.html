@@ -70,11 +70,11 @@
         .section { display: none; }
         .section.active { display: block; }
 
-        /* PDF TEMPLATE */
+        /* PDF TEMPLATE STYLING */
         #pdf-template { position: fixed; left: 0; top: 0; width: 210mm; min-height: 297mm; background: white; color: black; font-family: 'Times New Roman', Times, serif; z-index: -100; visibility: hidden; }
+        .pdf-kop { width: 100%; display: block; }
         .pdf-content { padding: 0 25mm 25mm 25mm; }
-        .pdf-kop { width: 100%; display: block; margin-bottom: 20px; }
-        .pdf-body { font-size: 12pt; line-height: 1.6; text-align: justify; }
+        .pdf-body { font-size: 12pt; line-height: 1.6; text-align: justify; margin-top: 10px; }
         .pdf-sig-container { margin-top: 40px; display: flex; justify-content: flex-end; }
         .pdf-sig-box { text-align: left; width: 250px; }
     </style>
@@ -93,9 +93,9 @@
                 <p>Program Studi Pendidikan Biologi</p>
                 <p>FKIP Unwir</p>
                 <br>
-                <p>Berdasarkan hasil penilaian Tim Penguji atas penampilan Saudara pada Sidang Skripsi yang telah dilaksanakan, Saudara dinyatakan <b>Lulus</b> dengan nilai <b>(<span id="pdf-grade">A</span>) (<span id="pdf-skor">80.00</span>)</b> pada Program Studi Pendidikan Biologi FKIP Universitas Wiralodra.</p>
+                <p>Berdasarkan hasil penilaian Tim Penguji atas penampilan Saudara pada Sidang Skripsi yang dilaksanakan. Saudara dinyatakan <b>Lulus</b> dengan nilai <b>(<span id="pdf-grade">A</span>) (<span id="pdf-skor">80.00</span>)</b> pada Program Studi Pendidikan Biologi FKIP Universitas Wiralodra.</p>
                 <br>
-                <p>Kami ucapkan selamat kepada Saudara yang dinyatakan lulus dan jangan berkecil hati, tetaplah bersemangat bagi Saudara yang dinyatakan tidak lulus.</p>
+                <p>Kami ucapkan selamat kepada Saudara yang dinyatakan lulus dan jangan berkecil hati bersemangatlah kembali bagi Saudara yang dinyatakan tidak lulus.</p>
             </div>
             <div class="pdf-sig-container">
                 <div class="pdf-sig-box">
@@ -179,10 +179,10 @@
             </div>
 
             <div id="data-user" class="section">
-                <h2>Manajemen Akun User & Password</h2>
+                <h2>Manajemen Akun Dosen & Mahasiswa</h2>
                 <div class="card">
                     <form onsubmit="addDosen(event)" style="display:grid; grid-template-columns: 1fr 1fr 1fr 100px; gap:10px; margin-bottom:20px;">
-                        <input type="text" id="d-nama" placeholder="Nama & Gelar" class="auth-input" required>
+                        <input type="text" id="d-nama" placeholder="Nama Lengkap & Gelar" class="auth-input" required>
                         <input type="text" id="d-user" placeholder="Username" class="auth-input" required>
                         <input type="text" id="d-pass" placeholder="Password" class="auth-input" required>
                         <button class="btn-submit" style="height:45px;">Add Dosen</button>
@@ -227,7 +227,7 @@
 
     <div class="modal" id="modalJadwal">
         <div class="modal-content">
-            <h3>Atur Penjadwalan Sidang</h3>
+            <h3>Atur/Edit Penjadwalan Sidang</h3>
             <hr style="margin:15px 0;">
             <input type="hidden" id="edit-id">
             <label>Tanggal Sidang:</label><input type="date" id="set-tgl" class="auth-input">
@@ -235,7 +235,7 @@
             <label>Ketua Penguji (P1):</label><select id="set-p1" class="auth-input"></select>
             <label>Anggota Penguji (P2):</label><select id="set-p2" class="auth-input"></select>
             <label>Anggota Penguji (P3):</label><select id="set-p3" class="auth-input"></select>
-            <button onclick="saveJadwalCloud()" class="btn-submit">Simpan & Terbitkan Jadwal</button>
+            <button onclick="saveJadwalCloud()" class="btn-submit">Simpan Perubahan Jadwal</button>
             <button onclick="closeModal('modalJadwal')" style="background:#94a3b8; margin-top:10px;" class="btn-submit">Batal</button>
         </div>
     </div>
@@ -267,7 +267,7 @@
     </div>
 
     <script>
-        // CONFIG FIREBASE
+        // FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyAeKgtwI7Dj1Z_zEXM-4I36u7gJ8ycUEps",
             authDomain: "sidang-biologi.firebaseapp.com",
@@ -314,7 +314,6 @@
             e.preventDefault();
             const u = document.getElementById('login-user').value;
             const p = document.getElementById('login-pass').value;
-
             if(u === 'admin' && p === 'samirnawir21') { loginSuccess({nama: 'Super Admin', username: 'admin', password: p, role: 'admin'}); return; }
             const d = dbDosen.find(x => x.username === u && x.password === p);
             if(d) { loginSuccess({...d, role: 'dosen'}); return; }
@@ -326,7 +325,6 @@
         function loginSuccess(user) { currentUser = user; sessionStorage.setItem('sess_bio_cloud', JSON.stringify(user)); initApp(); }
         function handleLogout() { sessionStorage.removeItem('sess_bio_cloud'); location.reload(); }
 
-        // PASSWORD USER
         function handleUpdatePassword(e) {
             e.preventDefault();
             if(document.getElementById('old-pass').value !== currentUser.password) return alert("Password lama salah!");
@@ -336,8 +334,7 @@
             db.ref(path + '/password').set(newP).then(() => { alert("Password Berhasil!"); currentUser.password = newP; sessionStorage.setItem('sess_bio_cloud', JSON.stringify(currentUser)); e.target.reset(); });
         }
 
-        // ADMIN RESET PASS
-        function openResetModal(path, username) { document.getElementById('reset-title').innerText = "Ubah Password: " + username; document.getElementById('reset-path').value = path; document.getElementById('modalResetPass').style.display = 'flex'; }
+        function openResetModal(path, username) { document.getElementById('reset-title').innerText = "Reset Password: " + username; document.getElementById('reset-path').value = path; document.getElementById('modalResetPass').style.display = 'flex'; }
         function saveResetPasswordCloud() { const path = document.getElementById('reset-path').value; const val = document.getElementById('reset-new-val').value; if(!val) return alert("Ketik password!"); db.ref(path + '/password').set(val).then(() => { alert("Password Berhasil Diubah!"); closeModal('modalResetPass'); }); }
 
         function initApp() {
@@ -374,7 +371,7 @@
         function renderJadwal() {
             const body = document.getElementById('bodyJadwal'); const head = document.getElementById('headJadwal'); body.innerHTML = '';
             if(currentUser?.role === 'dosen') head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Peran & Nilai Anda</th><th>Aksi</th><th>Status</th>`;
-            else head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Status Nilai Pembimbing & Penguji</th><th>Status Sidang</th>`;
+            else head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Rincian Nilai Pembimbing & Penguji</th><th>Status Sidang</th>`;
 
             let data = dbSidang;
             if(currentUser?.role === 'dosen') data = dbSidang.filter(s => s.pem1===currentUser.nama || s.pem2===currentUser.nama || s.penguji.p1===currentUser.nama || s.penguji.p2===currentUser.nama || s.penguji.p3===currentUser.nama);
@@ -395,16 +392,17 @@
                     let nContent = '';
                     if(currentUser?.role === 'mahasiswa') {
                         if(s.status === 'Done' && s.adminApproved) {
-                            const avg = (((s.nilai.pem1||0)+(s.nilai.pem2||0)+(s.nilai.p1||0)+(s.nilai.p2||0)+(s.nilai.p3||0))/5).toFixed(2);
+                            const total = (s.nilai.pem1||0)+(s.nilai.pem2||0)+(s.nilai.p1||0)+(s.nilai.p2||0)+(s.nilai.p3||0);
+                            const avg = (total / 5).toFixed(2);
                             nContent = `<table class="sub-table"><tr><td>Bimbingan</td><td><b>${s.nilai.pem1} / ${s.nilai.pem2}</b></td></tr><tr><td>Penguji</td><td><b>${s.nilai.p1} / ${s.nilai.p2} / ${s.nilai.p3}</b></td></tr><tr style="background:#ecfdf5;"><td><b>RATA-RATA</b></td><td><b style="color:var(--primary);">${avg} (${getNilaiHuruf(avg)})</b></td></tr></table><button class="btn-download" onclick='unduhHasilSidang(${JSON.stringify(s)})'><i class="fas fa-file-pdf"></i> Unduh Hasil Sidang</button>`;
                         } else if (s.status === 'Done' && !s.adminApproved) nContent = `<span style="font-style:italic; color:var(--primary-dark);">Sidang Selesai. Menunggu Validasi Admin...</span>`;
                         else nContent = `<span style="font-style:italic; color:#999;">Nilai sedang diproses...</span>`;
                     } else {
-                        // ADMIN MONITORING NILAI LENGKAP
+                        // TAMPILAN MONITORING ADMIN
                         let btnApprove = '';
                         if (s.status === 'Done') {
                             if (!s.adminApproved) btnApprove = `<button class="btn-approve" onclick="toggleApproval(${s.id}, true)"><i class="fas fa-check-double"></i> Setujui & Publikasikan</button>`;
-                            else btnApprove = `<button class="btn-approve" style="background:#ef4444;" onclick="toggleApproval(${s.id}, false)"><i class="fas fa-times-circle"></i> Batalkan Persetujuan</button>`;
+                            else btnApprove = `<button class="btn-approve" style="background:#ef4444;" onclick="toggleApproval(${s.id}, false)"><i class="fas fa-times-circle"></i> Batalkan Publikasi</button>`;
                         }
                         nContent = `<table class="sub-table"><tr style="background:#f1f5f9;"><td colspan="2"><b>Rincian Nilai Update</b></td></tr><tr><td>Pem 1: ${s.pem1}</td><td><b>${s.nilai.pem1 || 0}</b></td></tr><tr><td>Pem 2: ${s.pem2}</td><td><b>${s.nilai.pem2 || 0}</b></td></tr><tr><td>P1: ${s.penguji.p1}</td><td><b>${s.nilai.p1 || 0}</b></td></tr><tr><td>P2: ${s.penguji.p2}</td><td><b>${s.nilai.p2 || 0}</b></td></tr><tr><td>P3: ${s.penguji.p3}</td><td><b>${s.nilai.p3 || 0}</b></td></tr></table> ${btnApprove}`;
                     }
@@ -414,8 +412,8 @@
         }
 
         function toggleApproval(id, status) {
-            if(confirm(status ? 'Setujui dan tampilkan nilai ke mahasiswa?' : 'Batalkan persetujuan dan sembunyikan nilai?')) {
-                db.ref(`sidang/${id}/adminApproved`).set(status).then(() => alert(status ? 'Nilai Dipublikasikan!' : 'Persetujuan Dibatalkan!'));
+            if(confirm(status ? 'Publikasikan nilai ke mahasiswa?' : 'Sembunyikan nilai dari mahasiswa?')) {
+                db.ref(`sidang/${id}/adminApproved`).set(status).then(() => alert(status ? 'Dipublikasikan!' : 'Disembunyikan!'));
             }
         }
 
@@ -454,23 +452,23 @@
                 const [tgl] = s.jadwal.split(' ');
                 document.getElementById('set-tgl').value = tgl;
             }
+            // Populate Examiners in Dropdowns for editing
+            document.getElementById('set-p1').value = s.penguji.p1 || '-';
+            document.getElementById('set-p2').value = s.penguji.p2 || '-';
+            document.getElementById('set-p3').value = s.penguji.p3 || '-';
             document.getElementById('modalJadwal').style.display = 'flex';
         }
 
         function saveJadwalCloud() {
             const id = document.getElementById('edit-id').value;
-            db.ref('sidang/' + id).update({
-                jadwal: `${document.getElementById('set-tgl').value} Pukul ${document.getElementById('set-jam').value} WIB`,
-                status: 'Scheduled',
-                penguji: { p1: document.getElementById('set-p1').value, p2: document.getElementById('set-p2').value, p3: document.getElementById('set-p3').value }
-            });
+            db.ref('sidang/' + id).update({ jadwal: `${document.getElementById('set-tgl').value} Pukul ${document.getElementById('set-jam').value} WIB`, status: 'Scheduled', penguji: { p1: document.getElementById('set-p1').value, p2: document.getElementById('set-p2').value, p3: document.getElementById('set-p3').value } });
             closeModal('modalJadwal');
         }
 
         function openNilaiModal(id, role, label) {
             const s = dbSidang.find(x => x.id == id);
             document.getElementById('n-id').value = id; document.getElementById('n-role').value = role;
-            document.getElementById('n-title').innerText = `Nilai: ${label} - ${s.nama}`;
+            document.getElementById('n-title').innerText = `Nilai: ${label} untuk ${s.nama}`;
             document.getElementById('n-skor').value = s.nilai[role] || ''; document.getElementById('n-revisi').value = s.revisi[role] || '';
             document.getElementById('modalNilai').style.display = 'flex';
         }
@@ -495,7 +493,7 @@
         }
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function resetSemuaData() { if(prompt('Ketik "RESET" untuk hapus database:') === 'RESET') db.ref('sidang').remove(); }
+        function resetSemuaData() { if(confirm('Hapus semua data sidang?')) db.ref('sidang').remove(); }
         if(currentUser) initApp();
     </script>
 </body>
