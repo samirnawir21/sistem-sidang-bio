@@ -20,11 +20,16 @@
 
         /* AUTH SCREEN */
         .auth-container { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); display: flex; justify-content: center; align-items: center; z-index: 999; }
-        .auth-box { background: white; padding: 40px; border-radius: 12px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .auth-box { background: white; padding: 40px; border-radius: 12px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; }
         .auth-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; outline: none; font-size: 0.9rem; }
         .auth-btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.3s; }
         .auth-btn:hover { background: var(--primary-dark); }
         .toggle-link { margin-top: 15px; font-size: 0.85rem; color: #666; cursor: pointer; text-decoration: underline; }
+
+        /* ANIMASI TEKS BERGERAK */
+        .marquee-container { width: 100%; overflow: hidden; white-space: nowrap; margin-bottom: 20px; }
+        .moving-text { display: inline-block; padding-left: 100%; animation: marquee 10s linear infinite; color: var(--primary-dark); font-weight: 600; font-size: 1.2rem; }
+        @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
 
         /* DASHBOARD LAYOUT */
         #dashboard-app { display: none; height: 100vh; width: 100%; }
@@ -64,7 +69,7 @@
         .section { display: none; }
         .section.active { display: block; }
 
-        /* PDF TEMPLATE STYLING */
+        /* PDF TEMPLATE */
         #pdf-template { position: fixed; left: 0; top: 0; width: 210mm; min-height: 297mm; background: white; color: black; font-family: 'Times New Roman', Times, serif; z-index: -100; visibility: hidden; }
         .pdf-content { padding: 0 25mm 25mm 25mm; }
         .pdf-kop { width: 100%; display: block; margin-bottom: 20px; }
@@ -80,23 +85,23 @@
         <div class="pdf-content">
             <div class="pdf-body">
                 <p>Nomor : <span id="pdf-nomor">69/N/Bio-FKIP/XII/2025</span></p>
-                <p>Perihal : <b>Hasil Sidang Skripsi</b></p>
+                [cite_start]<p>Perihal : <b>Hasil Sidang Skripsi</b> [cite: 7]</p>
                 <br>
-                <p>Yth. Sdr. <b id="pdf-nama-mhs">NAMA MAHASISWA</b></p>
-                <p>Peserta Sidang Skripsi</p>
-                <p>Program Studi Pendidikan Biologi</p>
-                <p>FKIP Unwir</p>
+                <p>Yth. Sdr. [cite_start]<b id="pdf-nama-mhs">NAMA MAHASISWA</b> [cite: 8]</p>
+                [cite_start]<p>Peserta Sidang Skripsi [cite: 9]</p>
+                [cite_start]<p>Program Studi Pendidikan Biologi [cite: 10]</p>
+                [cite_start]<p>FKIP Unwir [cite: 11]</p>
                 <br>
-                <p>Berdasarkan hasil penilaian Tim Penguji atas penampilan Saudara pada Sidang Skripsi yang telah dilaksanakan, Saudara dinyatakan <b>Lulus</b> dengan nilai <b>(<span id="pdf-grade">A</span>) (<span id="pdf-skor">80.00</span>)</b> pada Program Studi Pendidikan Biologi FKIP Universitas Wiralodra.</p>
+                [cite_start]<p>Berdasarkan hasil penilaian Tim Penguji atas penampilan Saudara pada Sidang Skripsi yang telah dilaksanakan, Saudara dinyatakan <b>Lulus</b> dengan nilai <b>(<span id="pdf-grade">A</span>) (<span id="pdf-skor">80.00</span>)</b> pada Program Studi Pendidikan Biologi FKIP Universitas Wiralodra[cite: 13].</p>
                 <br>
-                <p>Kami ucapkan selamat kepada Saudara yang dinyatakan lulus dan jangan berkecil hati, tetaplah bersemangat bagi Saudara yang dinyatakan tidak lulus.</p>
+                [cite_start]<p>Kami ucapkan selamat kepada Saudara yang dinyatakan lulus dan jangan berkecil hati, tetaplah bersemangat bagi Saudara yang dinyatakan tidak lulus[cite: 14].</p>
             </div>
             <div class="pdf-sig-container">
                 <div class="pdf-sig-box">
-                    <p>Indramayu, <span id="pdf-tgl-skrg"></span></p>
+                    [cite_start]<p>Indramayu, <span id="pdf-tgl-skrg"></span> [cite: 15]</p>
                     <p>Ketua Program Studi,</p>
                     <br><br><br><br><br>
-                    <p><b>Dr. Sugianto, M.Pd.</b></p>
+                    <p><b>Dr. [cite_start]Sugianto, M.Pd.</b> [cite: 17]</p>
                 </div>
             </div>
         </div>
@@ -104,8 +109,10 @@
 
     <div id="auth-screen" class="auth-container">
         <div id="login-box" class="auth-box">
-            <div style="font-size: 3rem; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-microscope"></i></div>
-            <h3 style="color:var(--primary-dark); margin-bottom:20px;">Sidang Biologi Cloud</h3>
+            <div style="font-size: 3rem; color: var(--primary); margin-bottom: 5px;"><i class="fas fa-microscope"></i></div>
+            <div class="marquee-container">
+                <div class="moving-text">Sidang Biologi Cloud</div>
+            </div>
             <form onsubmit="handleLogin(event)">
                 <input type="text" id="login-user" class="auth-input" placeholder="Username / NPM" required>
                 <input type="password" id="login-pass" class="auth-input" placeholder="Password" required>
@@ -351,27 +358,21 @@
             if(newP !== confP) {
                 alert("Gagal: Konfirmasi password baru tidak cocok!"); return;
             }
-            if(newP.length < 4) {
-                alert("Gagal: Password baru minimal 4 karakter."); return;
-            }
 
             let refPath = "";
             if(currentUser.role === 'admin') {
-                alert("Admin tidak dapat mengubah password melalui sistem ini demi keamanan."); return;
+                alert("Admin tidak dapat mengubah password melalui sistem ini."); return;
             } else if(currentUser.role === 'dosen') {
                 refPath = 'dosen/' + currentUser.username + '/password';
             } else {
                 refPath = 'users/' + currentUser.username + '/password';
             }
 
-            // Update ke Firebase Cloud
             db.ref(refPath).set(newP).then(() => {
-                alert("Berhasil: Password akun Anda telah diperbarui!");
-                // Update sesi lokal agar data tetap sinkron
+                alert("Password Berhasil Diperbarui!");
                 currentUser.password = newP;
                 sessionStorage.setItem('sess_bio_cloud', JSON.stringify(currentUser));
                 e.target.reset();
-                showSection('jadwal');
             });
         }
 
@@ -384,8 +385,6 @@
 
             const mItems = ['menu-jadwal', 'menu-daftar', 'menu-admin', 'menu-data-dosen', 'menu-password'];
             mItems.forEach(i => document.getElementById(i).style.display = 'none');
-
-            // Selalu munculkan menu Ubah Password
             document.getElementById('menu-password').style.display = 'flex';
 
             if(currentUser.role === 'admin') {
