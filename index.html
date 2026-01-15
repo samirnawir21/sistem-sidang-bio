@@ -41,7 +41,7 @@
         .logout-container { margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
         .btn-logout { width: 100%; padding: 10px; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; }
         
-        .main { flex: 1; padding: 30px; overflow-y: auto; background: var(--bg); }
+        .main { flex: 1; padding: 30px; overflow-y: auto; background: var(--bg); position: relative; }
         h2 { margin-bottom: 20px; color: var(--primary-dark); border-bottom: 2px solid var(--primary); padding-bottom: 10px; display: inline-block; }
         .card { background: var(--white); padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
         
@@ -49,34 +49,44 @@
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
         th { background: #f9fafb; color: #374151; font-weight: 600; }
-        
         .sub-table { width: 100%; background: #fefefe; border: 1px solid #eee; border-radius: 4px; }
         .sub-table td { padding: 5px 10px; border: none; font-size: 0.85rem; }
 
+        /* STATUS BADGES */
         .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
         .status-Pending { background: #fef3c7; color: #d97706; }
         .status-Scheduled { background: #d1fae5; color: #059669; }
         .status-Done { background: #dbeafe; color: #1e40af; }
         
+        /* BUTTONS */
         .btn-action { border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px; color: white; font-size: 0.8rem; }
         .btn-edit { background: #2563eb; } 
         .btn-delete { background: #ef4444; }
         .btn-approve { background: #0ea5e9; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; width: 100%; margin-top: 10px; font-weight: 600; }
         .btn-download { background: #8b5cf6; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; margin-top: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-submit { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: 600; }
-        
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 500px; max-height: 90vh; overflow-y: auto; }
-        .section { display: none; }
-        .section.active { display: block; }
 
-        /* PDF TEMPLATE STYLING */
+        /* CHAT UI */
+        .chat-container { height: 65vh; display: flex; flex-direction: column; background: #fff; border-radius: 12px; border: 1px solid #eee; overflow: hidden; }
+        #chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f8fafc; }
+        .msg { max-width: 70%; padding: 10px 15px; border-radius: 15px; font-size: 0.9rem; position: relative; line-height: 1.4; }
+        .msg.me { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
+        .msg.other { align-self: flex-start; background: white; border: 1px solid #eee; border-bottom-left-radius: 2px; }
+        .msg-info { font-size: 0.65rem; margin-bottom: 4px; opacity: 0.8; font-weight: 600; }
+        .chat-input-area { padding: 15px; background: #fff; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        
+        /* PDF TEMPLATE */
         #pdf-template { position: fixed; left: 0; top: 0; width: 210mm; min-height: 297mm; background: white; color: black; font-family: 'Times New Roman', Times, serif; z-index: -100; visibility: hidden; }
         .pdf-kop { width: 100%; display: block; }
         .pdf-content { padding: 0 25mm 25mm 25mm; }
         .pdf-body { font-size: 12pt; line-height: 1.6; text-align: justify; margin-top: 10px; }
         .pdf-sig-container { margin-top: 40px; display: flex; justify-content: flex-end; }
         .pdf-sig-box { text-align: left; width: 250px; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 500px; max-height: 90vh; overflow-y: auto; }
+        .section { display: none; }
+        .section.active { display: block; }
     </style>
 </head>
 <body>
@@ -143,8 +153,9 @@
             <div class="menu-list" style="flex:1;">
                 <div class="menu-item" id="menu-jadwal" onclick="showSection('jadwal')"><i class="fas fa-calendar-check"></i> Jadwal & Nilai</div>
                 <div class="menu-item" id="menu-daftar" onclick="showSection('pendaftaran')"><i class="fas fa-edit"></i> Pendaftaran</div>
+                <div class="menu-item" id="menu-chat" onclick="showSection('chat')"><i class="fas fa-comments"></i> Chat Diskusi</div>
                 <div class="menu-item" id="menu-admin" onclick="showSection('admin')"><i class="fas fa-user-shield"></i> Control Panel</div>
-                <div class="menu-item" id="menu-data-user" onclick="showSection('data-user')"><i class="fas fa-users-rectangle"></i> Kelola Akun User</div>
+                <div class="menu-item" id="menu-data-user" onclick="showSection('data-user')"><i class="fas fa-users-rectangle"></i> Kelola Akun</div>
                 <div class="menu-item" id="menu-password" onclick="showSection('ubah-password')"><i class="fas fa-key"></i> Ubah Password</div>
             </div>
             <div class="logout-container">
@@ -153,6 +164,19 @@
         </div>
 
         <div class="main">
+            <div id="chat" class="section">
+                <h2>Chat Diskusi Sidang</h2>
+                <div class="card" style="padding:0; overflow:hidden;">
+                    <div class="chat-container">
+                        <div id="chat-messages"></div>
+                        <form onsubmit="sendMessage(event)" class="chat-input-area">
+                            <input type="text" id="chat-input" class="auth-input" style="margin:0;" placeholder="Tulis pesan..." required>
+                            <button type="submit" class="auth-btn" style="width:100px; padding:0;">Kirim</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <div id="ubah-password" class="section">
                 <h2>Ubah Password Akun</h2>
                 <div class="card" style="max-width: 500px;">
@@ -179,13 +203,13 @@
             </div>
 
             <div id="data-user" class="section">
-                <h2>Manajemen Akun User & Password</h2>
+                <h2>Manajemen Akun User</h2>
                 <div class="card">
                     <form onsubmit="addDosen(event)" style="display:grid; grid-template-columns: 1fr 1fr 1fr 100px; gap:10px; margin-bottom:20px;">
-                        <input type="text" id="d-nama" placeholder="Nama Lengkap & Gelar" class="auth-input" required>
+                        <input type="text" id="d-nama" placeholder="Nama Lengkap" class="auth-input" required>
                         <input type="text" id="d-user" placeholder="Username" class="auth-input" required>
                         <input type="text" id="d-pass" placeholder="Password" class="auth-input" required>
-                        <button class="btn-submit" style="height:45px;">Add Dosen</button>
+                        <button class="btn-submit" style="height:45px;">Tambah</button>
                     </form>
                     <table id="tabelUserManage">
                         <thead><tr><th>Nama / NPM</th><th>Username</th><th>Password</th><th>Opsi</th></tr></thead>
@@ -211,14 +235,14 @@
             </div>
 
             <div id="admin" class="section">
-                <h2>Admin Control Panel (Pendaftaran Sidang)</h2>
+                <h2>Admin Control Panel (Pendaftaran)</h2>
                 <div class="card">
                     <table>
-                        <thead><tr><th>Mahasiswa</th><th>Judul</th><th>Status Jadwal</th><th>Opsi</th></tr></thead>
+                        <thead><tr><th>Mahasiswa</th><th>Judul</th><th>Status</th><th>Opsi</th></tr></thead>
                         <tbody id="bodyAdmin"></tbody>
                     </table>
                     <div style="margin-top:40px; border-top:2px dashed #eee; padding-top:20px;">
-                        <button class="btn-delete" style="width:100%; padding:12px; font-weight:600;" onclick="resetSemuaData()">RESET DATABASE SIDANG</button>
+                        <button class="btn-delete" style="width:100%; padding:12px; font-weight:600;" onclick="resetSemuaData()">RESET DATA SIDANG</button>
                     </div>
                 </div>
             </div>
@@ -227,24 +251,23 @@
 
     <div class="modal" id="modalJadwal">
         <div class="modal-content">
-            <h3>Atur/Edit Penjadwalan Sidang</h3>
+            <h3>Atur Penjadwalan Sidang</h3>
             <hr style="margin:15px 0;">
             <input type="hidden" id="edit-id">
-            <label>Tanggal Sidang:</label><input type="date" id="set-tgl" class="auth-input">
-            <label>Waktu Sidang:</label><input type="time" id="set-jam" class="auth-input">
-            <label>Ketua Penguji (P1):</label><select id="set-p1" class="auth-input"></select>
-            <label>Anggota Penguji (P2):</label><select id="set-p2" class="auth-input"></select>
-            <label>Anggota Penguji (P3):</label><select id="set-p3" class="auth-input"></select>
-            <button onclick="saveJadwalCloud()" class="btn-submit">Simpan & Terbitkan Jadwal</button>
+            <label>Tanggal:</label><input type="date" id="set-tgl" class="auth-input">
+            <label>Waktu:</label><input type="time" id="set-jam" class="auth-input">
+            <label>P1:</label><select id="set-p1" class="auth-input"></select>
+            <label>P2:</label><select id="set-p2" class="auth-input"></select>
+            <label>P3:</label><select id="set-p3" class="auth-input"></select>
+            <button onclick="saveJadwalCloud()" class="btn-submit">Simpan & Terbitkan</button>
             <button onclick="closeModal('modalJadwal')" style="background:#94a3b8; margin-top:10px;" class="btn-submit">Batal</button>
         </div>
     </div>
 
     <div class="modal" id="modalNilai">
         <div class="modal-content">
-            <h3 id="n-title">Input Nilai Sidang</h3>
+            <h3 id="n-title">Input Nilai</h3>
             <hr style="margin:15px 0;">
-            
             <div style="background: #f9fafb; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.8rem; border: 1px solid #eee;">
                 <b style="display:block; margin-bottom:5px;">Keterangan Rentang Nilai:</b>
                 <table style="width:100%; text-align:center; border-collapse:collapse;">
@@ -254,24 +277,23 @@
                     <tr><td>65 - 70 = <b>BC</b></td><td>45 - 50 = <b>E</b></td></tr>
                 </table>
             </div>
-
             <input type="hidden" id="n-id"><input type="hidden" id="n-role">
-            <label>Skor Angka (0-100):</label>
+            <label>Skor (0-100):</label>
             <input type="number" id="n-skor" class="auth-input" placeholder="0-100" min="0" max="100">
             <label>Catatan Revisi:</label>
             <textarea id="n-revisi" class="auth-input" style="height:100px; padding-top:10px;"></textarea>
-            <button onclick="saveNilaiCloud()" class="btn-submit">Simpan Nilai Ke Cloud</button>
+            <button onclick="saveNilaiCloud()" class="btn-submit">Simpan Nilai</button>
             <button onclick="closeModal('modalNilai')" style="background:#94a3b8; margin-top:10px;" class="btn-submit">Batal</button>
         </div>
     </div>
 
     <div class="modal" id="modalResetPass">
         <div class="modal-content">
-            <h3 id="reset-title">Ubah Password Akun User</h3>
+            <h3 id="reset-title">Reset Password</h3>
             <hr style="margin:15px 0;">
             <input type="hidden" id="reset-path">
             <label>Password Baru:</label>
-            <input type="text" id="reset-new-val" class="auth-input" placeholder="Ketik password baru">
+            <input type="text" id="reset-new-val" class="auth-input">
             <button onclick="saveResetPasswordCloud()" class="btn-submit">Simpan Perubahan</button>
             <button onclick="closeModal('modalResetPass')" style="background:#94a3b8; margin-top:10px;" class="btn-submit">Batal</button>
         </div>
@@ -296,9 +318,24 @@
         let dbUsers = [];
         let currentUser = JSON.parse(sessionStorage.getItem('sess_bio_cloud'));
 
+        // Real-time Listeners
         db.ref('sidang').on('value', snap => { dbSidang = snap.val() ? Object.values(snap.val()) : []; renderAll(); });
         db.ref('dosen').on('value', snap => { dbDosen = snap.val() ? Object.values(snap.val()) : []; populateDosenSelects(); renderAll(); });
         db.ref('users').on('value', snap => { dbUsers = snap.val() ? Object.values(snap.val()) : []; renderAll(); });
+        
+        // CHAT SYNC
+        db.ref('chats').on('value', snap => {
+            const messages = snap.val() ? Object.values(snap.val()) : [];
+            const chatBox = document.getElementById('chat-messages');
+            if(!chatBox) return;
+            chatBox.innerHTML = messages.map(m => `
+                <div class="msg ${m.sender === currentUser.nama ? 'me' : 'other'}">
+                    <div class="msg-info">${m.sender} • ${m.time}</div>
+                    ${m.text}
+                </div>
+            `).join('');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
 
         function getNilaiHuruf(s) {
             if (!s || s === 0) return '-';
@@ -307,7 +344,7 @@
             if (s >= 50) return 'D'; return 'E';
         }
 
-        // AUTH
+        // AUTH Logic
         function toggleAuth(v) {
             document.getElementById('login-box').style.display = v === 'login' ? 'block' : 'none';
             document.getElementById('register-box').style.display = v === 'register' ? 'block' : 'none';
@@ -335,17 +372,39 @@
         function loginSuccess(user) { currentUser = user; sessionStorage.setItem('sess_bio_cloud', JSON.stringify(user)); initApp(); }
         function handleLogout() { sessionStorage.removeItem('sess_bio_cloud'); location.reload(); }
 
+        // CHAT Logic
+        function sendMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const msg = input.value;
+            if(!msg) return;
+            const now = new Date();
+            db.ref('chats').push({
+                sender: currentUser.nama,
+                text: msg,
+                time: now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0'),
+                timestamp: Date.now()
+            });
+            input.value = '';
+        }
+
+        // PASSWORD Logic
         function handleUpdatePassword(e) {
             e.preventDefault();
             if(document.getElementById('old-pass').value !== currentUser.password) return alert("Password lama salah!");
             const newP = document.getElementById('new-pass').value;
             if(newP !== document.getElementById('confirm-pass').value) return alert("Konfirmasi tidak cocok!");
             let path = currentUser.role === 'dosen' ? 'dosen/' + currentUser.username : 'users/' + currentUser.username;
-            db.ref(path + '/password').set(newP).then(() => { alert("Password Berhasil!"); currentUser.password = newP; sessionStorage.setItem('sess_bio_cloud', JSON.stringify(currentUser)); e.target.reset(); });
+            db.ref(path + '/password').set(newP).then(() => {
+                alert("Password Berhasil Diperbarui!");
+                currentUser.password = newP;
+                sessionStorage.setItem('sess_bio_cloud', JSON.stringify(currentUser));
+                e.target.reset();
+            });
         }
 
         function openResetModal(path, username) { document.getElementById('reset-title').innerText = "Ubah Password: " + username; document.getElementById('reset-path').value = path; document.getElementById('modalResetPass').style.display = 'flex'; }
-        function saveResetPasswordCloud() { const path = document.getElementById('reset-path').value; const val = document.getElementById('reset-new-val').value; if(!val) return alert("Ketik password!"); db.ref(path + '/password').set(val).then(() => { alert("Password Berhasil Diubah!"); closeModal('modalResetPass'); }); }
+        function saveResetPasswordCloud() { const path = document.getElementById('reset-path').value; const val = document.getElementById('reset-new-val').value; if(!val) return alert("Ketik password!"); db.ref(path + '/password').set(val).then(() => { alert("Password Berhasil!"); closeModal('modalResetPass'); }); }
 
         function initApp() {
             if(!currentUser) return;
@@ -353,12 +412,24 @@
             document.getElementById('dashboard-app').style.display = 'flex';
             document.getElementById('display-name').innerText = currentUser.nama;
             document.getElementById('display-role').innerText = currentUser.role;
-            const mItems = ['menu-jadwal', 'menu-daftar', 'menu-admin', 'menu-data-user', 'menu-password'];
+
+            const mItems = ['menu-jadwal', 'menu-daftar', 'menu-admin', 'menu-data-user', 'menu-password', 'menu-chat'];
             mItems.forEach(i => document.getElementById(i).style.display = 'none');
             document.getElementById('menu-password').style.display = 'flex';
-            if(currentUser.role === 'admin') { mItems.forEach(i => document.getElementById(i).style.display = 'flex'); showSection('admin'); }
-            else if(currentUser.role === 'dosen') { document.getElementById('menu-jadwal').style.display = 'flex'; showSection('jadwal'); }
-            else { document.getElementById('menu-jadwal').style.display = 'flex'; document.getElementById('menu-daftar').style.display = 'flex'; document.getElementById('m-info').innerText = `${currentUser.username} - ${currentUser.nama}`; showSection('pendaftaran'); }
+            document.getElementById('menu-chat').style.display = 'flex';
+
+            if(currentUser.role === 'admin') {
+                mItems.forEach(i => document.getElementById(i).style.display = 'flex');
+                showSection('admin');
+            } else if(currentUser.role === 'dosen') {
+                document.getElementById('menu-jadwal').style.display = 'flex';
+                showSection('jadwal');
+            } else {
+                document.getElementById('menu-jadwal').style.display = 'flex';
+                document.getElementById('menu-daftar').style.display = 'flex';
+                document.getElementById('m-info').innerText = `${currentUser.username} - ${currentUser.nama}`;
+                showSection('pendaftaran');
+            }
         }
 
         function showSection(id) {
@@ -380,8 +451,8 @@
 
         function renderJadwal() {
             const body = document.getElementById('bodyJadwal'); const head = document.getElementById('headJadwal'); body.innerHTML = '';
-            if(currentUser?.role === 'dosen') head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Peran & Nilai Anda</th><th>Aksi</th><th>Status</th>`;
-            else head.innerHTML = `<th>Mahasiswa</th><th>Waktu Sidang</th><th>Status/Hasil Nilai</th><th>Status Sidang</th>`;
+            if(currentUser?.role === 'dosen') head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Peran & Nilai</th><th>Aksi</th><th>Status</th>`;
+            else head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Rincian Nilai</th><th>Status Sidang</th>`;
 
             let data = dbSidang;
             if(currentUser?.role === 'dosen') data = dbSidang.filter(s => s.pem1===currentUser.nama || s.pem2===currentUser.nama || s.penguji.p1===currentUser.nama || s.penguji.p2===currentUser.nama || s.penguji.p3===currentUser.nama);
@@ -403,24 +474,16 @@
                     if(currentUser?.role === 'mahasiswa') {
                         if(s.status === 'Done' && s.adminApproved) {
                             const total = (((s.nilai.pem1||0)+(s.nilai.pem2||0)+(s.nilai.p1||0)+(s.nilai.p2||0)+(s.nilai.p3||0))/5).toFixed(2);
-                            nContent = `<table class="sub-table"><tr><td>Bimbingan</td><td><b>${s.nilai.pem1} / ${s.nilai.pem2}</b></td></tr><tr><td>Penguji</td><td><b>${s.nilai.p1}/${s.nilai.p2}/${s.nilai.p3}</b></td></tr><tr style="background:#ecfdf5;"><td><b>RATA-RATA</b></td><td><b style="color:var(--primary);">${total} (${getNilaiHuruf(total)})</b></td></tr></table><button class="btn-download" onclick='unduhHasilSidang(${JSON.stringify(s)})'><i class="fas fa-file-pdf"></i> Unduh Hasil Sidang</button>`;
+                            nContent = `<table class="sub-table"><tr><td>Pembimbing</td><td><b>${s.nilai.pem1}/${s.nilai.pem2}</b></td></tr><tr><td>Penguji</td><td><b>${s.nilai.p1}/${s.nilai.p2}/${s.nilai.p3}</b></td></tr><tr style="background:#ecfdf5;"><td><b>RATA-RATA</b></td><td><b style="color:var(--primary);">${total} (${getNilaiHuruf(total)})</b></td></tr></table><button class="btn-download" onclick='unduhHasilSidang(${JSON.stringify(s)})'><i class="fas fa-file-pdf"></i> Unduh Hasil Sidang</button>`;
                         } else if (s.status === 'Done' && !s.adminApproved) nContent = `<span style="font-style:italic; color:var(--primary-dark);">Sidang Selesai. Menunggu Validasi Admin...</span>`;
                         else nContent = `<span style="font-style:italic; color:#999;">Nilai sedang diproses...</span>`;
                     } else {
-                        // ADMIN MONITORING
-                        let avgText = '';
                         let btnApprove = '';
-                        let btnDownloadAdmin = '';
                         if (s.status === 'Done') {
-                            const total = (((s.nilai.pem1||0)+(s.nilai.pem2||0)+(s.nilai.p1||0)+(s.nilai.p2||0)+(s.nilai.p3||0))/5).toFixed(2);
-                            avgText = `<tr style="background:#ecfdf5;"><td><b>RATA-RATA</b></td><td><b style="color:var(--primary);">${total} (${getNilaiHuruf(total)})</b></td></tr>`;
                             if (!s.adminApproved) btnApprove = `<button class="btn-approve" onclick="toggleApproval(${s.id}, true)"><i class="fas fa-check-double"></i> Setujui & Publikasikan</button>`;
-                            else {
-                                btnApprove = `<button class="btn-approve" style="background:#ef4444;" onclick="toggleApproval(${s.id}, false)"><i class="fas fa-times-circle"></i> Batalkan Publikasi</button>`;
-                                btnDownloadAdmin = `<button class="btn-download" style="margin-top:5px; background:#6366f1;" onclick='unduhHasilSidang(${JSON.stringify(s)})'><i class="fas fa-file-pdf"></i> Unduh Hasil Sidang</button>`;
-                            }
+                            else btnApprove = `<button class="btn-approve" style="background:#ef4444;" onclick="toggleApproval(${s.id}, false)"><i class="fas fa-times-circle"></i> Batalkan Publikasi</button>`;
                         }
-                        nContent = `<table class="sub-table"><tr style="background:#f1f5f9;"><td colspan="2"><b>Rincian Nilai Update</b></td></tr><tr><td>Pem: ${s.pem1} / ${s.pem2}</td><td><b>${s.nilai.pem1||0} / ${s.nilai.pem2||0}</b></td></tr><tr><td>Peng: P1/P2/P3</td><td><b>${s.nilai.p1||0} / ${s.nilai.p2||0} / ${s.nilai.p3||0}</b></td></tr>${avgText}</table> ${btnApprove} ${btnDownloadAdmin}`;
+                        nContent = `<table class="sub-table"><tr style="background:#f1f5f9;"><td colspan="2"><b>Rincian Nilai Update</b></td></tr><tr><td>Pem: ${s.pem1}/${s.pem2}</td><td><b>${s.nilai.pem1||0}/${s.nilai.pem2||0}</b></td></tr><tr><td>Peng: P1/P2/P3</td><td><b>${s.nilai.p1||0}/${s.nilai.p2||0}/${s.nilai.p3||0}</b></td></tr></table> ${btnApprove}`;
                     }
                     body.innerHTML += `<tr><td><b>${s.nama}</b><br><small>${s.npm}</small><br><small><i>${s.judul}</i></small></td><td>${s.jadwal}</td><td>${nContent}</td><td><span class="status-badge status-${s.status}">${s.status}</span></td></tr>`;
                 }
@@ -460,14 +523,11 @@
             const s = dbSidang.find(x => x.id == id);
             document.getElementById('edit-id').value = id;
             if(s.jadwal !== '-') { const [tgl] = s.jadwal.split(' '); document.getElementById('set-tgl').value = tgl; }
-            document.getElementById('set-p1').value = s.penguji.p1 || '-';
-            document.getElementById('set-p2').value = s.penguji.p2 || '-';
-            document.getElementById('set-p3').value = s.penguji.p3 || '-';
             document.getElementById('modalJadwal').style.display = 'flex';
         }
 
         function saveJadwalCloud() { const id = document.getElementById('edit-id').value; db.ref('sidang/' + id).update({ jadwal: `${document.getElementById('set-tgl').value} Pukul ${document.getElementById('set-jam').value} WIB`, status: 'Scheduled', penguji: { p1: document.getElementById('set-p1').value, p2: document.getElementById('set-p2').value, p3: document.getElementById('set-p3').value } }); closeModal('modalJadwal'); }
-        function openNilaiModal(id, role, label) { const s = dbSidang.find(x => x.id == id); document.getElementById('n-id').value = id; document.getElementById('n-role').value = role; document.getElementById('n-title').innerText = `Nilai: ${label} untuk ${s.nama}`; document.getElementById('n-skor').value = s.nilai[role] || ''; document.getElementById('n-revisi').value = s.revisi[role] || ''; document.getElementById('modalNilai').style.display = 'flex'; }
+        function openNilaiModal(id, role, label) { const s = dbSidang.find(x => x.id == id); document.getElementById('n-id').value = id; document.getElementById('n-role').value = role; document.getElementById('n-title').innerText = `Input Nilai: ${label}`; document.getElementById('n-skor').value = s.nilai[role] || ''; document.getElementById('n-revisi').value = s.revisi[role] || ''; document.getElementById('modalNilai').style.display = 'flex'; }
         function saveNilaiCloud() { const id = document.getElementById('n-id').value; const role = document.getElementById('n-role').value; const skor = parseFloat(document.getElementById('n-skor').value) || 0; db.ref(`sidang/${id}/nilai/${role}`).set(skor); db.ref(`sidang/${id}/revisi/${role}`).set(document.getElementById('n-revisi').value); const s = dbSidang.find(x => x.id == id); const n = {...s.nilai, [role]: skor}; if(n.pem1 > 0 && n.pem2 > 0 && n.p1 > 0 && n.p2 > 0 && n.p3 > 0) db.ref(`sidang/${id}/status`).set('Done'); closeModal('modalNilai'); }
         function addDosen(e) { e.preventDefault(); const u = document.getElementById('d-user').value; db.ref('dosen/' + u).set({ nama: document.getElementById('d-nama').value, username: u, password: document.getElementById('d-pass').value, role: 'dosen' }); e.target.reset(); }
         function populateDosenSelects() { let opts = '<option value="-">-- Pilih Dosen --</option>' + dbDosen.map(d => `<option value="${d.nama}">${d.nama}</option>`).join(''); ['pembimbing1','pembimbing2','set-p1','set-p2','set-p3'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerHTML = opts; }); }
