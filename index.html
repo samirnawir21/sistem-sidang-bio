@@ -64,7 +64,7 @@
         .section { display: none; }
         .section.active { display: block; }
 
-        /* PDF TEMPLATE STYLING (DIUBAH AGAR LEBIH STABIL) */
+        /* PDF TEMPLATE STYLING */
         #pdf-template { position: fixed; left: 0; top: 0; width: 210mm; min-height: 297mm; background: white; color: black; font-family: 'Times New Roman', Times, serif; z-index: -100; visibility: hidden; }
         .pdf-content { padding: 0 25mm 25mm 25mm; }
         .pdf-kop { width: 100%; display: block; margin-bottom: 20px; }
@@ -80,23 +80,23 @@
         <div class="pdf-content">
             <div class="pdf-body">
                 <p>Nomor : <span id="pdf-nomor">69/N/Bio-FKIP/XII/2025</span></p>
-                [cite_start]<p>Perihal : <b>Hasil Sidang Skripsi</b> [cite: 7]</p>
+                <p>Perihal : <b>Hasil Sidang Skripsi</b></p>
                 <br>
                 <p>Yth. Sdr. <b id="pdf-nama-mhs">NAMA MAHASISWA</b></p>
-                [cite_start]<p>Peserta Sidang Skripsi [cite: 9]</p>
-                [cite_start]<p>Program Studi Pendidikan Biologi [cite: 10]</p>
-                [cite_start]<p>FKIP Unwir [cite: 11]</p>
+                <p>Peserta Sidang Skripsi</p>
+                <p>Program Studi Pendidikan Biologi</p>
+                <p>FKIP Unwir</p>
                 <br>
-                [cite_start]<p>Berdasarkan hasil penilaian Tim Penguji atas penampilan Saudara pada Sidang Skripsi yang telah dilaksanakan, Saudara dinyatakan <b>Lulus</b> dengan nilai <b>(<span id="pdf-grade">A</span>) (<span id="pdf-skor">80.00</span>)</b> pada Program Studi Pendidikan Biologi FKIP Universitas Wiralodra[cite: 13].</p>
+                <p>Berdasarkan hasil penilaian Tim Penguji atas penampilan Saudara pada Sidang Skripsi yang telah dilaksanakan, Saudara dinyatakan <b>Lulus</b> dengan nilai <b>(<span id="pdf-grade">A</span>) (<span id="pdf-skor">80.00</span>)</b> pada Program Studi Pendidikan Biologi FKIP Universitas Wiralodra.</p>
                 <br>
-                [cite_start]<p>Kami ucapkan selamat kepada Saudara yang dinyatakan lulus dan jangan berkecil hati, tetaplah bersemangat bagi Saudara yang dinyatakan tidak lulus[cite: 14].</p>
+                <p>Kami ucapkan selamat kepada Saudara yang dinyatakan lulus dan jangan berkecil hati, tetaplah bersemangat bagi Saudara yang dinyatakan tidak lulus.</p>
             </div>
             <div class="pdf-sig-container">
                 <div class="pdf-sig-box">
-                    [cite_start]<p>Indramayu, <span id="pdf-tgl-skrg"></span> [cite: 15]</p>
-                    [cite_start]<p>Ketua Program Studi, [cite: 15]</p>
+                    <p>Indramayu, <span id="pdf-tgl-skrg"></span></p>
+                    <p>Ketua Program Studi,</p>
                     <br><br><br><br><br>
-                    <p><b>Dr. [cite_start]Sugianto, M.Pd.</b> [cite: 17]</p>
+                    <p><b>Dr. Sugianto, M.Pd.</b></p>
                 </div>
             </div>
         </div>
@@ -137,6 +137,7 @@
                 <div class="menu-item" id="menu-daftar" onclick="showSection('pendaftaran')"><i class="fas fa-edit"></i> Pendaftaran</div>
                 <div class="menu-item" id="menu-admin" onclick="showSection('admin')"><i class="fas fa-user-shield"></i> Control Panel</div>
                 <div class="menu-item" id="menu-data-dosen" onclick="showSection('data-dosen')"><i class="fas fa-users-rectangle"></i> Kelola Dosen</div>
+                <div class="menu-item" id="menu-password" onclick="showSection('ubah-password')"><i class="fas fa-key"></i> Ubah Password</div>
             </div>
             <div class="logout-container">
                 <button class="btn-logout" onclick="handleLogout()"><i class="fas fa-power-off"></i> Logout</button>
@@ -144,6 +145,21 @@
         </div>
 
         <div class="main">
+            <div id="ubah-password" class="section">
+                <h2>Ubah Password Akun</h2>
+                <div class="card" style="max-width: 500px;">
+                    <form onsubmit="handleUpdatePassword(event)">
+                        <label style="font-size:0.85rem;">Password Lama:</label>
+                        <input type="password" id="old-pass" class="auth-input" placeholder="Masukkan password saat ini" required>
+                        <label style="font-size:0.85rem;">Password Baru:</label>
+                        <input type="password" id="new-pass" class="auth-input" placeholder="Masukkan password baru" required>
+                        <label style="font-size:0.85rem;">Konfirmasi Password Baru:</label>
+                        <input type="password" id="confirm-pass" class="auth-input" placeholder="Ulangi password baru" required>
+                        <button type="submit" class="btn-submit">Update Password</button>
+                    </form>
+                </div>
+            </div>
+
             <div id="pendaftaran" class="section">
                 <h2>Form Pendaftaran Sidang</h2>
                 <div class="card">
@@ -274,6 +290,7 @@
             return 'E';
         }
 
+        // AUTH & LOGOUT
         function toggleAuth(v) {
             document.getElementById('login-box').style.display = v === 'login' ? 'block' : 'none';
             document.getElementById('register-box').style.display = v === 'register' ? 'block' : 'none';
@@ -298,7 +315,7 @@
             const p = document.getElementById('login-pass').value;
 
             if(u === 'admin' && p === 'samirnawir21') {
-                loginSuccess({nama: 'Super Admin', role: 'admin'}); return;
+                loginSuccess({nama: 'Super Admin', username: 'admin', password: p, role: 'admin'}); return;
             }
 
             const d = dbDosen.find(x => x.username === u && x.password === p);
@@ -307,7 +324,7 @@
             const m = dbUsers.find(x => x.username === u && x.password === p);
             if(m) { loginSuccess({...m, role: 'mahasiswa'}); return; }
 
-            alert('Login Gagal!');
+            alert('Login Gagal! Akun tidak ditemukan.');
         }
 
         function loginSuccess(user) {
@@ -321,6 +338,43 @@
             location.reload();
         }
 
+        // LOGIKA UBAH PASSWORD
+        function handleUpdatePassword(e) {
+            e.preventDefault();
+            const oldP = document.getElementById('old-pass').value;
+            const newP = document.getElementById('new-pass').value;
+            const confP = document.getElementById('confirm-pass').value;
+
+            if(oldP !== currentUser.password) {
+                alert("Gagal: Password lama salah!"); return;
+            }
+            if(newP !== confP) {
+                alert("Gagal: Konfirmasi password baru tidak cocok!"); return;
+            }
+            if(newP.length < 4) {
+                alert("Gagal: Password baru minimal 4 karakter."); return;
+            }
+
+            let refPath = "";
+            if(currentUser.role === 'admin') {
+                alert("Admin tidak dapat mengubah password melalui sistem ini demi keamanan."); return;
+            } else if(currentUser.role === 'dosen') {
+                refPath = 'dosen/' + currentUser.username + '/password';
+            } else {
+                refPath = 'users/' + currentUser.username + '/password';
+            }
+
+            // Update ke Firebase Cloud
+            db.ref(refPath).set(newP).then(() => {
+                alert("Berhasil: Password akun Anda telah diperbarui!");
+                // Update sesi lokal agar data tetap sinkron
+                currentUser.password = newP;
+                sessionStorage.setItem('sess_bio_cloud', JSON.stringify(currentUser));
+                e.target.reset();
+                showSection('jadwal');
+            });
+        }
+
         function initApp() {
             if(!currentUser) return;
             document.getElementById('auth-screen').style.display = 'none';
@@ -328,8 +382,11 @@
             document.getElementById('display-name').innerText = currentUser.nama;
             document.getElementById('display-role').innerText = currentUser.role;
 
-            const mItems = ['menu-jadwal', 'menu-daftar', 'menu-admin', 'menu-data-dosen'];
+            const mItems = ['menu-jadwal', 'menu-daftar', 'menu-admin', 'menu-data-dosen', 'menu-password'];
             mItems.forEach(i => document.getElementById(i).style.display = 'none');
+
+            // Selalu munculkan menu Ubah Password
+            document.getElementById('menu-password').style.display = 'flex';
 
             if(currentUser.role === 'admin') {
                 mItems.forEach(i => document.getElementById(i).style.display = 'flex');
@@ -458,7 +515,6 @@
             });
         }
 
-        // FUNGSI UNDUH PDF DENGAN PENGECEKAN PEMUATAN GAMBAR
         async function unduhHasilSidang(data) {
             const { jsPDF } = window.jspdf;
             const totalNilai = (data.nilai.pem1 || 0) + (data.nilai.pem2 || 0) + (data.nilai.p1 || 0) + (data.nilai.p2 || 0) + (data.nilai.p3 || 0);
@@ -474,9 +530,8 @@
             document.getElementById('pdf-tgl-skrg').innerText = `${skrg.getDate()} ${bulan[skrg.getMonth()]} ${skrg.getFullYear()}`;
 
             const element = document.getElementById('pdf-template');
-            element.style.visibility = 'visible'; // Sementara dibuat terlihat untuk html2canvas
+            element.style.visibility = 'visible';
 
-            // Tunggu gambar Kop Surat dimuat
             const kopImg = document.getElementById('img-kop');
             const waitForImage = () => {
                 if (kopImg.complete) return Promise.resolve();
