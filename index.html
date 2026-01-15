@@ -64,54 +64,39 @@
         .section { display: none; }
         .section.active { display: block; }
 
-        /* PDF TEMPLATE STYLING (KOP SURAT) */
-        #pdf-template { position: absolute; left: -9999px; top: 0; width: 210mm; min-height: 297mm; padding: 25mm; background: white; color: black; font-family: 'Times New Roman', Times, serif; }
-        .pdf-header-container { display: flex; align-items: center; border-bottom: 4px double black; padding-bottom: 10px; margin-bottom: 25px; }
-        .pdf-logo { width: 80px; height: auto; margin-right: 20px; }
-        .pdf-header-text { text-align: center; flex: 1; }
-        .pdf-header-text h2 { font-size: 16pt; margin: 0; color: black; border: none; padding: 0; font-weight: bold;}
-        .pdf-header-text h3 { font-size: 14pt; margin: 0; font-weight: bold;}
-        .pdf-header-text p { font-size: 9pt; margin: 2px 0; }
-        
+        /* PDF TEMPLATE STYLING */
+        #pdf-template { position: absolute; left: -9999px; top: 0; width: 210mm; min-height: 297mm; background: white; color: black; font-family: 'Times New Roman', Times, serif; }
+        .pdf-content { padding: 0 25mm 25mm 25mm; }
+        .pdf-kop { width: 100%; display: block; margin-bottom: 20px; }
         .pdf-body { font-size: 12pt; line-height: 1.6; text-align: justify; }
         .pdf-sig-container { margin-top: 50px; display: flex; justify-content: flex-end; }
-        .pdf-sig-box { text-align: left; width: 250px; position: relative; }
-        .signature-img { width: 130px; height: auto; margin: -15px 0 -15px 10px; display: block; }
+        .pdf-sig-box { text-align: left; width: 250px; }
     </style>
 </head>
 <body>
 
     <div id="pdf-template">
-        <div class="pdf-header-container">
-            <img class="pdf-logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjMDU5NjY5IiBkPSJNMjU2IDhMMTggOTR2MTIzYzAgMTU0IDEwMiAyOTggMjM4IDM0NCAxMzYtNDYgMjM4LTE5MCAyMzgtMzQ0Vjk0TDI1NiA4em0wIDQwNWMtOTggMC0xNzgtODAtMTc4LTE3OHM4MC0xNzggMTc4LTE3OCAxNzggODAgMTc4IDE3OC04MCAxNzgtMTc4IDE3OHoiLz48L3N2Zz4=">
-            <div class="pdf-header-text">
-                <h2>UNIVERSITAS WIRALODRA</h2>
-                <h3>FAKULTAS KEGURUAN DAN ILMU PENDIDIKAN</h3>
-                <h3>PROGRAM STUDI PENDIDIKAN BIOLOGI</h3>
-                <p>Terakreditasi Baik Sekali LAMDIK Nomor: 194/LAMDIK/Ak/S/1/2023</p>
-                <p>Jl. Ir. H. Djuanda Km. 3 Indramayu 45213 Telp. (0234) 271885</p>
-                <p>Email: prodibiofkipunwir@gmail.com</p>
+        <img class="pdf-kop" src="kop biologi.jpg">
+        <div class="pdf-content">
+            <div class="pdf-body">
+                <p>Nomor : <span id="pdf-nomor">69/N/Bio-FKIP/XII/2025</span></p>
+                <p>Perihal : <b>Hasil Sidang Skripsi</b></p>
+                <br>
+                <p>Yth. Sdr. <b id="pdf-nama-mhs">NAMA MAHASISWA</b></p>
+                <p>Peserta Sidang Skripsi</p>
+                <p>Program Studi Pendidikan Biologi</p>
+                <p>FKIP Unwir</p>
+                <br>
+                <p>Berdasarkan hasil penilaian Tim Penguji atas penampilan Saudara pada Sidang Skripsi yang telah dilaksanakan, Saudara dinyatakan <b>Lulus</b> dengan nilai <b>(<span id="pdf-grade">A</span>) (<span id="pdf-skor">80.00</span>)</b> pada Program Studi Pendidikan Biologi FKIP Universitas Wiralodra.</p>
+                <br>
+                <p>Kami ucapkan selamat kepada Saudara yang dinyatakan lulus dan jangan berkecil hati, tetaplah bersemangat bagi Saudara yang dinyatakan tidak lulus.</p>
             </div>
-        </div>
-        <div class="pdf-body">
-            <p>Nomor : <span id="pdf-nomor">69/N/Bio-FKIP/XII/2025</span></p>
-            <p>Perihal : <b>Hasil Sidang Skripsi</b></p>
-            <br>
-            <p>Yth. Sdr. <b id="pdf-nama-mhs">NAMA MAHASISWA</b></p>
-            <p>Peserta Sidang Skripsi</p>
-            <p>Program Studi Pendidikan Biologi</p>
-            <p>FKIP Unwir</p>
-            <br>
-            <p>Berdasarkan hasil penilaian Tim Penguji atas penampilan Saudara pada Sidang Skripsi yang telah dilaksanakan, Saudara dinyatakan <b>Lulus</b> dengan nilai <b>(<span id="pdf-grade">A</span>) (<span id="pdf-skor">80.00</span>)</b> pada Program Studi Pendidikan Biologi FKIP Universitas Wiralodra.</p>
-            <br>
-            <p>Kami ucapkan selamat kepada Saudara yang dinyatakan lulus dan jangan berkecil hati, tetaplah bersemangat bagi Saudara yang dinyatakan tidak lulus.</p>
-        </div>
-        <div class="pdf-sig-container">
-            <div class="pdf-sig-box">
-                <p>Indramayu, <span id="pdf-tgl-skrg"></span></p>
-                <p>Ketua Program Studi,</p>
-                <img class="signature-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAAyCAYAAAC99THMAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFJ0lEQVR4nO2ba2hcVRSAn/uYzKSpTZM2SdtU06SptmmapE2SpkmbpE2SpkmbpEnSJGmSNEmaJE2SpmmbpE2SpmmbpE2SpkmbpE2SpmmbpE2SpmmbpEnSJGmSNEmaJE2Spkn7n5m7H5u80SbtJGmStEn7nxnbuXOfOfvsvda999oH+Z//I+8fPdrf6A9A8A8g+AcQ/AMI/gEE/wCCfwDBP4DgH0DwDyD4BxD8Awj+AQT/AIJ/AME/gOAfQPAPIPhvC+R94L7W3fR9B63fO+ivfP456K98/jnoL3f+GegXfX4++nOenwP9mOfnQD/u+VnQ3/r8LOivfX4GdG+evwa6O88vhX6u8Xsh7uX3fVwW4vH76U+F6Tsc7O887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K887K+D/8vknp2e6O9OdmW7p7kz3/+f/AAU/AH9+5G8TAAAAAElFTkSuQmCC">
-                <p><b>Dr. Sugianto, M.Pd.</b></p>
+            <div class="pdf-sig-container">
+                <div class="pdf-sig-box">
+                    <p>Indramayu, <span id="pdf-tgl-skrg"></span></p>
+                    <p>Ketua Program Studi,</p>
+                    <br><br><br><br> <p><b>Dr. Sugianto, M.Pd.</b></p>
+                </div>
             </div>
         </div>
     </div>
@@ -447,7 +432,7 @@
                                     <i class="fas fa-file-pdf"></i> Unduh Hasil Sidang
                                 </button>`;
                         } else {
-                            nContent = `<span style="font-style:italic; color:#999;">Nilai sedang diproses Tim Pembimbing & Penguji...</span>`;
+                            nContent = `<span style="font-style:italic; color:#999;">Nilai sedang diproses...</span>`;
                         }
                     } else {
                         nContent = `
