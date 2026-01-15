@@ -64,38 +64,39 @@
         .section { display: none; }
         .section.active { display: block; }
 
-        /* PDF TEMPLATE STYLING */
-        #pdf-template { position: absolute; left: -9999px; top: 0; width: 210mm; min-height: 297mm; background: white; color: black; font-family: 'Times New Roman', Times, serif; }
+        /* PDF TEMPLATE STYLING (DIUBAH AGAR LEBIH STABIL) */
+        #pdf-template { position: fixed; left: 0; top: 0; width: 210mm; min-height: 297mm; background: white; color: black; font-family: 'Times New Roman', Times, serif; z-index: -100; visibility: hidden; }
         .pdf-content { padding: 0 25mm 25mm 25mm; }
         .pdf-kop { width: 100%; display: block; margin-bottom: 20px; }
         .pdf-body { font-size: 12pt; line-height: 1.6; text-align: justify; }
-        .pdf-sig-container { margin-top: 50px; display: flex; justify-content: flex-end; }
+        .pdf-sig-container { margin-top: 40px; display: flex; justify-content: flex-end; }
         .pdf-sig-box { text-align: left; width: 250px; }
     </style>
 </head>
 <body>
 
     <div id="pdf-template">
-        <img class="pdf-kop" src="kop biologi.jpg">
+        <img class="pdf-kop" id="img-kop" src="kop biologi.jpg" crossorigin="anonymous">
         <div class="pdf-content">
             <div class="pdf-body">
                 <p>Nomor : <span id="pdf-nomor">69/N/Bio-FKIP/XII/2025</span></p>
-                <p>Perihal : <b>Hasil Sidang Skripsi</b></p>
+                [cite_start]<p>Perihal : <b>Hasil Sidang Skripsi</b> [cite: 7]</p>
                 <br>
                 <p>Yth. Sdr. <b id="pdf-nama-mhs">NAMA MAHASISWA</b></p>
-                <p>Peserta Sidang Skripsi</p>
-                <p>Program Studi Pendidikan Biologi</p>
-                <p>FKIP Unwir</p>
+                [cite_start]<p>Peserta Sidang Skripsi [cite: 9]</p>
+                [cite_start]<p>Program Studi Pendidikan Biologi [cite: 10]</p>
+                [cite_start]<p>FKIP Unwir [cite: 11]</p>
                 <br>
-                <p>Berdasarkan hasil penilaian Tim Penguji atas penampilan Saudara pada Sidang Skripsi yang telah dilaksanakan, Saudara dinyatakan <b>Lulus</b> dengan nilai <b>(<span id="pdf-grade">A</span>) (<span id="pdf-skor">80.00</span>)</b> pada Program Studi Pendidikan Biologi FKIP Universitas Wiralodra.</p>
+                [cite_start]<p>Berdasarkan hasil penilaian Tim Penguji atas penampilan Saudara pada Sidang Skripsi yang telah dilaksanakan, Saudara dinyatakan <b>Lulus</b> dengan nilai <b>(<span id="pdf-grade">A</span>) (<span id="pdf-skor">80.00</span>)</b> pada Program Studi Pendidikan Biologi FKIP Universitas Wiralodra[cite: 13].</p>
                 <br>
-                <p>Kami ucapkan selamat kepada Saudara yang dinyatakan lulus dan jangan berkecil hati, tetaplah bersemangat bagi Saudara yang dinyatakan tidak lulus.</p>
+                [cite_start]<p>Kami ucapkan selamat kepada Saudara yang dinyatakan lulus dan jangan berkecil hati, tetaplah bersemangat bagi Saudara yang dinyatakan tidak lulus[cite: 14].</p>
             </div>
             <div class="pdf-sig-container">
                 <div class="pdf-sig-box">
-                    <p>Indramayu, <span id="pdf-tgl-skrg"></span></p>
-                    <p>Ketua Program Studi,</p>
-                    <br><br><br><br> <p><b>Dr. Sugianto, M.Pd.</b></p>
+                    [cite_start]<p>Indramayu, <span id="pdf-tgl-skrg"></span> [cite: 15]</p>
+                    [cite_start]<p>Ketua Program Studi, [cite: 15]</p>
+                    <br><br><br><br><br>
+                    <p><b>Dr. [cite_start]Sugianto, M.Pd.</b> [cite: 17]</p>
                 </div>
             </div>
         </div>
@@ -457,6 +458,7 @@
             });
         }
 
+        // FUNGSI UNDUH PDF DENGAN PENGECEKAN PEMUATAN GAMBAR
         async function unduhHasilSidang(data) {
             const { jsPDF } = window.jspdf;
             const totalNilai = (data.nilai.pem1 || 0) + (data.nilai.pem2 || 0) + (data.nilai.p1 || 0) + (data.nilai.p2 || 0) + (data.nilai.p3 || 0);
@@ -472,14 +474,34 @@
             document.getElementById('pdf-tgl-skrg').innerText = `${skrg.getDate()} ${bulan[skrg.getMonth()]} ${skrg.getFullYear()}`;
 
             const element = document.getElementById('pdf-template');
-            
-            html2canvas(element, { scale: 3, useCORS: true, logging: false }).then(canvas => {
+            element.style.visibility = 'visible'; // Sementara dibuat terlihat untuk html2canvas
+
+            // Tunggu gambar Kop Surat dimuat
+            const kopImg = document.getElementById('img-kop');
+            const waitForImage = () => {
+                if (kopImg.complete) return Promise.resolve();
+                return new Promise(resolve => { kopImg.onload = resolve; kopImg.onerror = resolve; });
+            };
+
+            await waitForImage();
+
+            html2canvas(element, { 
+                scale: 4, 
+                useCORS: true, 
+                logging: false,
+                allowTaint: true,
+                backgroundColor: "#ffffff"
+            }).then(canvas => {
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
                 pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
                 pdf.save(`Hasil_Sidang_${data.npm}.pdf`);
+                element.style.visibility = 'hidden';
+            }).catch(err => {
+                console.error("PDF Error:", err);
+                element.style.visibility = 'hidden';
             });
         }
 
