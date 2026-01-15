@@ -70,10 +70,10 @@
         .section { display: none; }
         .section.active { display: block; }
 
-        /* PDF TEMPLATE */
+        /* PDF TEMPLATE STYLING */
         #pdf-template { position: fixed; left: 0; top: 0; width: 210mm; min-height: 297mm; background: white; color: black; font-family: 'Times New Roman', Times, serif; z-index: -100; visibility: hidden; }
-        .pdf-content { padding: 0 25mm 25mm 25mm; }
         .pdf-kop { width: 100%; display: block; }
+        .pdf-content { padding: 0 25mm 25mm 25mm; }
         .pdf-body { font-size: 12pt; line-height: 1.6; text-align: justify; margin-top: 10px; }
         .pdf-sig-container { margin-top: 40px; display: flex; justify-content: flex-end; }
         .pdf-sig-box { text-align: left; width: 250px; }
@@ -158,9 +158,9 @@
                 <div class="card" style="max-width: 500px;">
                     <form onsubmit="handleUpdatePassword(event)">
                         <label style="font-size:0.85rem;">Password Lama:</label>
-                        <input type="password" id="old-pass" class="auth-input" placeholder="Password saat ini" required>
+                        <input type="password" id="old-pass" class="auth-input" placeholder="Masukkan password saat ini" required>
                         <label style="font-size:0.85rem;">Password Baru:</label>
-                        <input type="password" id="new-pass" class="auth-input" placeholder="Password baru" required>
+                        <input type="password" id="new-pass" class="auth-input" placeholder="Masukkan password baru" required>
                         <label style="font-size:0.85rem;">Konfirmasi Baru:</label>
                         <input type="password" id="confirm-pass" class="auth-input" placeholder="Ulangi password baru" required>
                         <button type="submit" class="btn-submit">Simpan Password Baru</button>
@@ -300,17 +300,11 @@
         db.ref('dosen').on('value', snap => { dbDosen = snap.val() ? Object.values(snap.val()) : []; populateDosenSelects(); renderAll(); });
         db.ref('users').on('value', snap => { dbUsers = snap.val() ? Object.values(snap.val()) : []; renderAll(); });
 
-        // Logika Huruf sesuai Gambar 
         function getNilaiHuruf(s) {
             if (!s || s === 0) return '-';
-            if (s >= 80) return 'A'; 
-            if (s >= 75) return 'AB'; 
-            if (s >= 70) return 'B';
-            if (s >= 65) return 'BC'; 
-            if (s >= 60) return 'C'; 
-            if (s >= 55) return 'CD';
-            if (s >= 50) return 'D';
-            return 'E';
+            if (s >= 80) return 'A'; if (s >= 75) return 'AB'; if (s >= 70) return 'B';
+            if (s >= 65) return 'BC'; if (s >= 60) return 'C'; if (s >= 55) return 'CD';
+            if (s >= 50) return 'D'; return 'E';
         }
 
         // AUTH
@@ -379,15 +373,15 @@
 
         function renderUserManagement() {
             const body = document.getElementById('bodyUserManage'); if(!body) return;
-            let html = dbDosen.map(d => `<tr><td>${d.nama} (D)</td><td>${d.username}</td><td><b>${d.password}</b></td><td><button class="btn-action btn-edit" onclick="openResetModal('dosen/${d.username}', '${d.username}')">Key</button><button class="btn-action btn-delete" onclick="db.ref('dosen/${d.username}').remove()">X</button></td></tr>`).join('');
-            html += dbUsers.map(u => `<tr><td>${u.nama} (M)</td><td>${u.username}</td><td><b>${u.password}</b></td><td><button class="btn-action btn-edit" onclick="openResetModal('users/${u.username}', '${u.username}')">Key</button><button class="btn-action btn-delete" onclick="db.ref('users/${u.username}').remove()">X</button></td></tr>`).join('');
+            let html = dbDosen.map(d => `<tr><td>${d.nama} (Dosen)</td><td>${d.username}</td><td><b>${d.password}</b></td><td><button class="btn-action btn-edit" onclick="openResetModal('dosen/${d.username}', '${d.username}')">Key</button><button class="btn-action btn-delete" onclick="db.ref('dosen/${d.username}').remove()">X</button></td></tr>`).join('');
+            html += dbUsers.map(u => `<tr><td>${u.nama} (Mahasiswa)</td><td>${u.username}</td><td><b>${u.password}</b></td><td><button class="btn-action btn-edit" onclick="openResetModal('users/${u.username}', '${u.username}')">Key</button><button class="btn-action btn-delete" onclick="db.ref('users/${u.username}').remove()">X</button></td></tr>`).join('');
             body.innerHTML = html;
         }
 
         function renderJadwal() {
             const body = document.getElementById('bodyJadwal'); const head = document.getElementById('headJadwal'); body.innerHTML = '';
             if(currentUser?.role === 'dosen') head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Peran & Nilai Anda</th><th>Aksi</th><th>Status</th>`;
-            else head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Rincian Nilai Pembimbing & Penguji</th><th>Status Sidang</th>`;
+            else head.innerHTML = `<th>Mahasiswa</th><th>Waktu Sidang</th><th>Status/Hasil Nilai</th><th>Status Sidang</th>`;
 
             let data = dbSidang;
             if(currentUser?.role === 'dosen') data = dbSidang.filter(s => s.pem1===currentUser.nama || s.pem2===currentUser.nama || s.penguji.p1===currentUser.nama || s.penguji.p2===currentUser.nama || s.penguji.p3===currentUser.nama);
@@ -408,36 +402,38 @@
                     let nContent = '';
                     if(currentUser?.role === 'mahasiswa') {
                         if(s.status === 'Done' && s.adminApproved) {
-                            const total = (s.nilai.pem1||0)+(s.nilai.pem2||0)+(s.nilai.p1||0)+(s.nilai.p2||0)+(s.nilai.p3||0);
-                            const avg = (total / 5).toFixed(2);
-                            nContent = `<table class="sub-table"><tr><td>Bimbingan</td><td><b>${s.nilai.pem1} / ${s.nilai.pem2}</b></td></tr><tr><td>Penguji</td><td><b>${s.nilai.p1} / ${s.nilai.p2} / ${s.nilai.p3}</b></td></tr><tr style="background:#ecfdf5;"><td><b>RATA-RATA</b></td><td><b style="color:var(--primary);">${avg} (${getNilaiHuruf(avg)})</b></td></tr></table><button class="btn-download" onclick='unduhHasilSidang(${JSON.stringify(s)})'><i class="fas fa-file-pdf"></i> Unduh Hasil Sidang</button>`;
+                            const total = (((s.nilai.pem1||0)+(s.nilai.pem2||0)+(s.nilai.p1||0)+(s.nilai.p2||0)+(s.nilai.p3||0))/5).toFixed(2);
+                            nContent = `<table class="sub-table"><tr><td>Bimbingan</td><td><b>${s.nilai.pem1} / ${s.nilai.pem2}</b></td></tr><tr><td>Penguji</td><td><b>${s.nilai.p1}/${s.nilai.p2}/${s.nilai.p3}</b></td></tr><tr style="background:#ecfdf5;"><td><b>RATA-RATA</b></td><td><b style="color:var(--primary);">${total} (${getNilaiHuruf(total)})</b></td></tr></table><button class="btn-download" onclick='unduhHasilSidang(${JSON.stringify(s)})'><i class="fas fa-file-pdf"></i> Unduh Hasil Sidang</button>`;
                         } else if (s.status === 'Done' && !s.adminApproved) nContent = `<span style="font-style:italic; color:var(--primary-dark);">Sidang Selesai. Menunggu Validasi Admin...</span>`;
                         else nContent = `<span style="font-style:italic; color:#999;">Nilai sedang diproses...</span>`;
                     } else {
+                        // ADMIN MONITORING
+                        let avgText = '';
                         let btnApprove = '';
+                        let btnDownloadAdmin = '';
                         if (s.status === 'Done') {
+                            const total = (((s.nilai.pem1||0)+(s.nilai.pem2||0)+(s.nilai.p1||0)+(s.nilai.p2||0)+(s.nilai.p3||0))/5).toFixed(2);
+                            avgText = `<tr style="background:#ecfdf5;"><td><b>RATA-RATA</b></td><td><b style="color:var(--primary);">${total} (${getNilaiHuruf(total)})</b></td></tr>`;
                             if (!s.adminApproved) btnApprove = `<button class="btn-approve" onclick="toggleApproval(${s.id}, true)"><i class="fas fa-check-double"></i> Setujui & Publikasikan</button>`;
-                            else btnApprove = `<button class="btn-approve" style="background:#ef4444;" onclick="toggleApproval(${s.id}, false)"><i class="fas fa-times-circle"></i> Batalkan Publikasi</button>`;
+                            else {
+                                btnApprove = `<button class="btn-approve" style="background:#ef4444;" onclick="toggleApproval(${s.id}, false)"><i class="fas fa-times-circle"></i> Batalkan Publikasi</button>`;
+                                btnDownloadAdmin = `<button class="btn-download" style="margin-top:5px; background:#6366f1;" onclick='unduhHasilSidang(${JSON.stringify(s)})'><i class="fas fa-file-pdf"></i> Unduh Hasil Sidang</button>`;
+                            }
                         }
-                        nContent = `<table class="sub-table"><tr style="background:#f1f5f9;"><td colspan="2"><b>Rincian Nilai Update</b></td></tr><tr><td>Pem 1: ${s.pem1}</td><td><b>${s.nilai.pem1 || 0}</b></td></tr><tr><td>Pem 2: ${s.pem2}</td><td><b>${s.nilai.pem2 || 0}</b></td></tr><tr><td>P1: ${s.penguji.p1}</td><td><b>${s.nilai.p1 || 0}</b></td></tr><tr><td>P2: ${s.penguji.p2}</td><td><b>${s.nilai.p2 || 0}</b></td></tr><tr><td>P3: ${s.penguji.p3}</td><td><b>${s.nilai.p3 || 0}</b></td></tr></table> ${btnApprove}`;
+                        nContent = `<table class="sub-table"><tr style="background:#f1f5f9;"><td colspan="2"><b>Rincian Nilai Update</b></td></tr><tr><td>Pem: ${s.pem1} / ${s.pem2}</td><td><b>${s.nilai.pem1||0} / ${s.nilai.pem2||0}</b></td></tr><tr><td>Peng: P1/P2/P3</td><td><b>${s.nilai.p1||0} / ${s.nilai.p2||0} / ${s.nilai.p3||0}</b></td></tr>${avgText}</table> ${btnApprove} ${btnDownloadAdmin}`;
                     }
                     body.innerHTML += `<tr><td><b>${s.nama}</b><br><small>${s.npm}</small><br><small><i>${s.judul}</i></small></td><td>${s.jadwal}</td><td>${nContent}</td><td><span class="status-badge status-${s.status}">${s.status}</span></td></tr>`;
                 }
             });
         }
 
-        function toggleApproval(id, status) {
-            if(confirm(status ? 'Publikasikan nilai ke mahasiswa?' : 'Sembunyikan nilai dari mahasiswa?')) {
-                db.ref(`sidang/${id}/adminApproved`).set(status).then(() => alert(status ? 'Dipublikasikan!' : 'Disembunyikan!'));
-            }
-        }
+        function toggleApproval(id, status) { if(confirm(status ? 'Publikasikan nilai?' : 'Sembunyikan nilai?')) db.ref(`sidang/${id}/adminApproved`).set(status).then(() => alert('Berhasil!')); }
 
         async function unduhHasilSidang(data) {
             const { jsPDF } = window.jspdf;
-            const total = (data.nilai.pem1||0)+(data.nilai.pem2||0)+(data.nilai.p1||0)+(data.nilai.p2||0)+(data.nilai.p3||0);
-            const avg = (total / 5).toFixed(2);
+            const total = (((data.nilai.pem1||0)+(data.nilai.pem2||0)+(data.nilai.p1||0)+(data.nilai.p2||0)+(data.nilai.p3||0))/5).toFixed(2);
             document.getElementById('pdf-nama-mhs').innerText = data.nama.toUpperCase();
-            document.getElementById('pdf-grade').innerText = getNilaiHuruf(avg); document.getElementById('pdf-skor').innerText = avg;
+            document.getElementById('pdf-grade').innerText = getNilaiHuruf(total); document.getElementById('pdf-skor').innerText = total;
             const skrg = new Date(); document.getElementById('pdf-tgl-skrg').innerText = `${skrg.getDate()} ${["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][skrg.getMonth()]} ${skrg.getFullYear()}`;
             const element = document.getElementById('pdf-template'); element.style.visibility = 'visible';
             const kopImg = document.getElementById('img-kop'); const waitForImage = () => { if (kopImg.complete) return Promise.resolve(); return new Promise(resolve => { kopImg.onload = resolve; kopImg.onerror = resolve; }); };
@@ -470,41 +466,13 @@
             document.getElementById('modalJadwal').style.display = 'flex';
         }
 
-        function saveJadwalCloud() {
-            const id = document.getElementById('edit-id').value;
-            db.ref('sidang/' + id).update({ jadwal: `${document.getElementById('set-tgl').value} Pukul ${document.getElementById('set-jam').value} WIB`, status: 'Scheduled', penguji: { p1: document.getElementById('set-p1').value, p2: document.getElementById('set-p2').value, p3: document.getElementById('set-p3').value } });
-            closeModal('modalJadwal');
-        }
-
-        function openNilaiModal(id, role, label) {
-            const s = dbSidang.find(x => x.id == id);
-            document.getElementById('n-id').value = id; document.getElementById('n-role').value = role;
-            document.getElementById('n-title').innerText = `Input Nilai: ${label} untuk ${s.nama}`;
-            document.getElementById('n-skor').value = s.nilai[role] || ''; document.getElementById('n-revisi').value = s.revisi[role] || '';
-            document.getElementById('modalNilai').style.display = 'flex';
-        }
-
-        function saveNilaiCloud() {
-            const id = document.getElementById('n-id').value; const role = document.getElementById('n-role').value; const skor = parseFloat(document.getElementById('n-skor').value) || 0;
-            db.ref(`sidang/${id}/nilai/${role}`).set(skor); db.ref(`sidang/${id}/revisi/${role}`).set(document.getElementById('n-revisi').value);
-            const s = dbSidang.find(x => x.id == id); const n = {...s.nilai, [role]: skor};
-            if(n.pem1 > 0 && n.pem2 > 0 && n.p1 > 0 && n.p2 > 0 && n.p3 > 0) db.ref(`sidang/${id}/status`).set('Done');
-            closeModal('modalNilai');
-        }
-
-        function addDosen(e) {
-            e.preventDefault(); const u = document.getElementById('d-user').value;
-            db.ref('dosen/' + u).set({ nama: document.getElementById('d-nama').value, username: u, password: document.getElementById('d-pass').value, role: 'dosen' });
-            e.target.reset();
-        }
-
-        function populateDosenSelects() {
-            let opts = '<option value="-">-- Pilih Dosen --</option>' + dbDosen.map(d => `<option value="${d.nama}">${d.nama}</option>`).join('');
-            ['pembimbing1','pembimbing2','set-p1','set-p2','set-p3'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerHTML = opts; });
-        }
-
+        function saveJadwalCloud() { const id = document.getElementById('edit-id').value; db.ref('sidang/' + id).update({ jadwal: `${document.getElementById('set-tgl').value} Pukul ${document.getElementById('set-jam').value} WIB`, status: 'Scheduled', penguji: { p1: document.getElementById('set-p1').value, p2: document.getElementById('set-p2').value, p3: document.getElementById('set-p3').value } }); closeModal('modalJadwal'); }
+        function openNilaiModal(id, role, label) { const s = dbSidang.find(x => x.id == id); document.getElementById('n-id').value = id; document.getElementById('n-role').value = role; document.getElementById('n-title').innerText = `Nilai: ${label} untuk ${s.nama}`; document.getElementById('n-skor').value = s.nilai[role] || ''; document.getElementById('n-revisi').value = s.revisi[role] || ''; document.getElementById('modalNilai').style.display = 'flex'; }
+        function saveNilaiCloud() { const id = document.getElementById('n-id').value; const role = document.getElementById('n-role').value; const skor = parseFloat(document.getElementById('n-skor').value) || 0; db.ref(`sidang/${id}/nilai/${role}`).set(skor); db.ref(`sidang/${id}/revisi/${role}`).set(document.getElementById('n-revisi').value); const s = dbSidang.find(x => x.id == id); const n = {...s.nilai, [role]: skor}; if(n.pem1 > 0 && n.pem2 > 0 && n.p1 > 0 && n.p2 > 0 && n.p3 > 0) db.ref(`sidang/${id}/status`).set('Done'); closeModal('modalNilai'); }
+        function addDosen(e) { e.preventDefault(); const u = document.getElementById('d-user').value; db.ref('dosen/' + u).set({ nama: document.getElementById('d-nama').value, username: u, password: document.getElementById('d-pass').value, role: 'dosen' }); e.target.reset(); }
+        function populateDosenSelects() { let opts = '<option value="-">-- Pilih Dosen --</option>' + dbDosen.map(d => `<option value="${d.nama}">${d.nama}</option>`).join(''); ['pembimbing1','pembimbing2','set-p1','set-p2','set-p3'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerHTML = opts; }); }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function resetSemuaData() { if(confirm('Hapus database sidang?')) db.ref('sidang').remove(); }
+        function resetSemuaData() { if(confirm('Hapus semua data?')) db.ref('sidang').remove(); }
         if(currentUser) initApp();
     </script>
 </body>
