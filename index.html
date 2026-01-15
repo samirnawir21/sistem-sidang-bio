@@ -70,10 +70,10 @@
         .section { display: none; }
         .section.active { display: block; }
 
-        /* PDF TEMPLATE STYLING */
+        /* PDF TEMPLATE */
         #pdf-template { position: fixed; left: 0; top: 0; width: 210mm; min-height: 297mm; background: white; color: black; font-family: 'Times New Roman', Times, serif; z-index: -100; visibility: hidden; }
-        .pdf-kop { width: 100%; display: block; }
         .pdf-content { padding: 0 25mm 25mm 25mm; }
+        .pdf-kop { width: 100%; display: block; }
         .pdf-body { font-size: 12pt; line-height: 1.6; text-align: justify; margin-top: 10px; }
         .pdf-sig-container { margin-top: 40px; display: flex; justify-content: flex-end; }
         .pdf-sig-box { text-align: left; width: 250px; }
@@ -158,9 +158,9 @@
                 <div class="card" style="max-width: 500px;">
                     <form onsubmit="handleUpdatePassword(event)">
                         <label style="font-size:0.85rem;">Password Lama:</label>
-                        <input type="password" id="old-pass" class="auth-input" placeholder="Masukkan password saat ini" required>
+                        <input type="password" id="old-pass" class="auth-input" placeholder="Password saat ini" required>
                         <label style="font-size:0.85rem;">Password Baru:</label>
-                        <input type="password" id="new-pass" class="auth-input" placeholder="Masukkan password baru" required>
+                        <input type="password" id="new-pass" class="auth-input" placeholder="Password baru" required>
                         <label style="font-size:0.85rem;">Konfirmasi Baru:</label>
                         <input type="password" id="confirm-pass" class="auth-input" placeholder="Ulangi password baru" required>
                         <button type="submit" class="btn-submit">Simpan Password Baru</button>
@@ -179,7 +179,7 @@
             </div>
 
             <div id="data-user" class="section">
-                <h2>Manajemen Akun Dosen & Mahasiswa</h2>
+                <h2>Manajemen Akun User & Password</h2>
                 <div class="card">
                     <form onsubmit="addDosen(event)" style="display:grid; grid-template-columns: 1fr 1fr 1fr 100px; gap:10px; margin-bottom:20px;">
                         <input type="text" id="d-nama" placeholder="Nama Lengkap & Gelar" class="auth-input" required>
@@ -235,7 +235,7 @@
             <label>Ketua Penguji (P1):</label><select id="set-p1" class="auth-input"></select>
             <label>Anggota Penguji (P2):</label><select id="set-p2" class="auth-input"></select>
             <label>Anggota Penguji (P3):</label><select id="set-p3" class="auth-input"></select>
-            <button onclick="saveJadwalCloud()" class="btn-submit">Simpan Perubahan Jadwal</button>
+            <button onclick="saveJadwalCloud()" class="btn-submit">Simpan & Terbitkan Jadwal</button>
             <button onclick="closeModal('modalJadwal')" style="background:#94a3b8; margin-top:10px;" class="btn-submit">Batal</button>
         </div>
     </div>
@@ -244,6 +244,17 @@
         <div class="modal-content">
             <h3 id="n-title">Input Nilai Sidang</h3>
             <hr style="margin:15px 0;">
+            
+            <div style="background: #f9fafb; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.8rem; border: 1px solid #eee;">
+                <b style="display:block; margin-bottom:5px;">Keterangan Rentang Nilai:</b>
+                <table style="width:100%; text-align:center; border-collapse:collapse;">
+                    <tr style="border-bottom:1px solid #eee;"><td>80 - 100 = <b>A</b></td><td>60 - 65 = <b>C</b></td></tr>
+                    <tr style="border-bottom:1px solid #eee;"><td>75 - 80 = <b>AB</b></td><td>55 - 60 = <b>CD</b></td></tr>
+                    <tr style="border-bottom:1px solid #eee;"><td>70 - 75 = <b>B</b></td><td>50 - 55 = <b>D</b></td></tr>
+                    <tr><td>65 - 70 = <b>BC</b></td><td>45 - 50 = <b>E</b></td></tr>
+                </table>
+            </div>
+
             <input type="hidden" id="n-id"><input type="hidden" id="n-role">
             <label>Skor Angka (0-100):</label>
             <input type="number" id="n-skor" class="auth-input" placeholder="0-100" min="0" max="100">
@@ -267,7 +278,6 @@
     </div>
 
     <script>
-        // FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyAeKgtwI7Dj1Z_zEXM-4I36u7gJ8ycUEps",
             authDomain: "sidang-biologi.firebaseapp.com",
@@ -290,10 +300,16 @@
         db.ref('dosen').on('value', snap => { dbDosen = snap.val() ? Object.values(snap.val()) : []; populateDosenSelects(); renderAll(); });
         db.ref('users').on('value', snap => { dbUsers = snap.val() ? Object.values(snap.val()) : []; renderAll(); });
 
+        // Logika Huruf sesuai Gambar 
         function getNilaiHuruf(s) {
             if (!s || s === 0) return '-';
-            if (s >= 80) return 'A'; if (s >= 75) return 'AB'; if (s >= 70) return 'B';
-            if (s >= 65) return 'BC'; if (s >= 60) return 'C'; if (s >= 50) return 'D';
+            if (s >= 80) return 'A'; 
+            if (s >= 75) return 'AB'; 
+            if (s >= 70) return 'B';
+            if (s >= 65) return 'BC'; 
+            if (s >= 60) return 'C'; 
+            if (s >= 55) return 'CD';
+            if (s >= 50) return 'D';
             return 'E';
         }
 
@@ -334,7 +350,7 @@
             db.ref(path + '/password').set(newP).then(() => { alert("Password Berhasil!"); currentUser.password = newP; sessionStorage.setItem('sess_bio_cloud', JSON.stringify(currentUser)); e.target.reset(); });
         }
 
-        function openResetModal(path, username) { document.getElementById('reset-title').innerText = "Reset Password: " + username; document.getElementById('reset-path').value = path; document.getElementById('modalResetPass').style.display = 'flex'; }
+        function openResetModal(path, username) { document.getElementById('reset-title').innerText = "Ubah Password: " + username; document.getElementById('reset-path').value = path; document.getElementById('modalResetPass').style.display = 'flex'; }
         function saveResetPasswordCloud() { const path = document.getElementById('reset-path').value; const val = document.getElementById('reset-new-val').value; if(!val) return alert("Ketik password!"); db.ref(path + '/password').set(val).then(() => { alert("Password Berhasil Diubah!"); closeModal('modalResetPass'); }); }
 
         function initApp() {
@@ -398,7 +414,6 @@
                         } else if (s.status === 'Done' && !s.adminApproved) nContent = `<span style="font-style:italic; color:var(--primary-dark);">Sidang Selesai. Menunggu Validasi Admin...</span>`;
                         else nContent = `<span style="font-style:italic; color:#999;">Nilai sedang diproses...</span>`;
                     } else {
-                        // TAMPILAN MONITORING ADMIN
                         let btnApprove = '';
                         if (s.status === 'Done') {
                             if (!s.adminApproved) btnApprove = `<button class="btn-approve" onclick="toggleApproval(${s.id}, true)"><i class="fas fa-check-double"></i> Setujui & Publikasikan</button>`;
@@ -448,11 +463,7 @@
         function openJadwalModal(id) {
             const s = dbSidang.find(x => x.id == id);
             document.getElementById('edit-id').value = id;
-            if(s.jadwal !== '-') {
-                const [tgl] = s.jadwal.split(' ');
-                document.getElementById('set-tgl').value = tgl;
-            }
-            // Populate Examiners in Dropdowns for editing
+            if(s.jadwal !== '-') { const [tgl] = s.jadwal.split(' '); document.getElementById('set-tgl').value = tgl; }
             document.getElementById('set-p1').value = s.penguji.p1 || '-';
             document.getElementById('set-p2').value = s.penguji.p2 || '-';
             document.getElementById('set-p3').value = s.penguji.p3 || '-';
@@ -468,7 +479,7 @@
         function openNilaiModal(id, role, label) {
             const s = dbSidang.find(x => x.id == id);
             document.getElementById('n-id').value = id; document.getElementById('n-role').value = role;
-            document.getElementById('n-title').innerText = `Nilai: ${label} untuk ${s.nama}`;
+            document.getElementById('n-title').innerText = `Input Nilai: ${label} untuk ${s.nama}`;
             document.getElementById('n-skor').value = s.nilai[role] || ''; document.getElementById('n-revisi').value = s.revisi[role] || '';
             document.getElementById('modalNilai').style.display = 'flex';
         }
@@ -493,7 +504,7 @@
         }
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function resetSemuaData() { if(confirm('Hapus semua data sidang?')) db.ref('sidang').remove(); }
+        function resetSemuaData() { if(confirm('Hapus database sidang?')) db.ref('sidang').remove(); }
         if(currentUser) initApp();
     </script>
 </body>
