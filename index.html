@@ -28,7 +28,7 @@
 
         /* ANIMASI TEKS BERGERAK (KIRI KE KANAN) */
         .marquee-container { width: 100%; overflow: hidden; white-space: nowrap; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .moving-text { display: inline-block; animation: marquee-lr 8s linear infinite; color: var(--primary-dark); font-weight: 600; font-size: 1.2rem; }
+        .moving-text { display: inline-block; animation: marquee-lr 10s linear infinite; color: var(--primary-dark); font-weight: 600; font-size: 1.2rem; }
         @keyframes marquee-lr { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
         /* DASHBOARD LAYOUT */
@@ -254,8 +254,20 @@
         </div>
     </div>
 
+    <div class="modal" id="modalResetPass">
+        <div class="modal-content">
+            <h3 id="reset-title">Ubah Password User</h3>
+            <hr style="margin:15px 0;">
+            <input type="hidden" id="reset-path">
+            <label>Password Baru:</label>
+            <input type="text" id="reset-new-val" class="auth-input" placeholder="Ketik password baru">
+            <button onclick="saveResetPasswordCloud()" class="btn-submit">Simpan Perubahan</button>
+            <button onclick="closeModal('modalResetPass')" style="background:#94a3b8; margin-top:10px;" class="btn-submit">Batal</button>
+        </div>
+    </div>
+
     <script>
-        // FIREBASE CONFIG
+        // CONFIG FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyAeKgtwI7Dj1Z_zEXM-4I36u7gJ8ycUEps",
             authDomain: "sidang-biologi.firebaseapp.com",
@@ -274,7 +286,6 @@
         let dbUsers = [];
         let currentUser = JSON.parse(sessionStorage.getItem('sess_bio_cloud'));
 
-        // SYNC REAL-TIME
         db.ref('sidang').on('value', snap => { dbSidang = snap.val() ? Object.values(snap.val()) : []; renderAll(); });
         db.ref('dosen').on('value', snap => { dbDosen = snap.val() ? Object.values(snap.val()) : []; populateDosenSelects(); renderAll(); });
         db.ref('users').on('value', snap => { dbUsers = snap.val() ? Object.values(snap.val()) : []; renderAll(); });
@@ -286,7 +297,6 @@
             return 'E';
         }
 
-        // AUTH SYSTEM
         function toggleAuth(v) {
             document.getElementById('login-box').style.display = v === 'login' ? 'block' : 'none';
             document.getElementById('register-box').style.display = v === 'register' ? 'block' : 'none';
@@ -296,14 +306,13 @@
             e.preventDefault();
             const npm = document.getElementById('reg-npm').value;
             db.ref('users/' + npm).set({ nama: document.getElementById('reg-nama').value, username: npm, password: document.getElementById('reg-pass').value, role: 'mahasiswa' });
-            alert('Registrasi Mahasiswa Berhasil!'); toggleAuth('login');
+            alert('Akun Berhasil Dibuat!'); toggleAuth('login');
         }
 
         function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById('login-user').value;
             const p = document.getElementById('login-pass').value;
-
             if(u === 'admin' && p === 'samirnawir21') { loginSuccess({nama: 'Super Admin', username: 'admin', password: p, role: 'admin'}); return; }
             const d = dbDosen.find(x => x.username === u && x.password === p);
             if(d) { loginSuccess({...d, role: 'dosen'}); return; }
@@ -315,22 +324,17 @@
         function loginSuccess(user) { currentUser = user; sessionStorage.setItem('sess_bio_cloud', JSON.stringify(user)); initApp(); }
         function handleLogout() { sessionStorage.removeItem('sess_bio_cloud'); location.reload(); }
 
-        // PASSWORD USER
         function handleUpdatePassword(e) {
             e.preventDefault();
-            const oldP = document.getElementById('old-pass').value;
+            if(document.getElementById('old-pass').value !== currentUser.password) return alert("Password lama salah!");
             const newP = document.getElementById('new-pass').value;
-            if(oldP !== currentUser.password) return alert("Password lama salah!");
             if(newP !== document.getElementById('confirm-pass').value) return alert("Konfirmasi tidak cocok!");
-
             let path = currentUser.role === 'dosen' ? 'dosen/' + currentUser.username : 'users/' + currentUser.username;
-            db.ref(path + '/password').set(newP).then(() => {
-                alert("Password Berhasil Diupdate!");
-                currentUser.password = newP;
-                sessionStorage.setItem('sess_bio_cloud', JSON.stringify(currentUser));
-                e.target.reset();
-            });
+            db.ref(path + '/password').set(newP).then(() => { alert("Password Diupdate!"); currentUser.password = newP; sessionStorage.setItem('sess_bio_cloud', JSON.stringify(currentUser)); e.target.reset(); });
         }
+
+        function openResetModal(path, username) { document.getElementById('reset-title').innerText = "Ubah Password: " + username; document.getElementById('reset-path').value = path; document.getElementById('modalResetPass').style.display = 'flex'; }
+        function saveResetPasswordCloud() { const path = document.getElementById('reset-path').value; const val = document.getElementById('reset-new-val').value; if(!val) return alert("Password kosong!"); db.ref(path + '/password').set(val).then(() => { alert("Berhasil!"); closeModal('modalResetPass'); }); }
 
         function initApp() {
             if(!currentUser) return;
@@ -338,23 +342,12 @@
             document.getElementById('dashboard-app').style.display = 'flex';
             document.getElementById('display-name').innerText = currentUser.nama;
             document.getElementById('display-role').innerText = currentUser.role;
-
             const mItems = ['menu-jadwal', 'menu-daftar', 'menu-admin', 'menu-data-dosen', 'menu-password'];
             mItems.forEach(i => document.getElementById(i).style.display = 'none');
             document.getElementById('menu-password').style.display = 'flex';
-
-            if(currentUser.role === 'admin') {
-                mItems.forEach(i => document.getElementById(i).style.display = 'flex');
-                showSection('admin');
-            } else if(currentUser.role === 'dosen') {
-                document.getElementById('menu-jadwal').style.display = 'flex';
-                showSection('jadwal');
-            } else {
-                document.getElementById('menu-jadwal').style.display = 'flex';
-                document.getElementById('menu-daftar').style.display = 'flex';
-                document.getElementById('m-info').innerText = `${currentUser.username} - ${currentUser.nama}`;
-                showSection('pendaftaran');
-            }
+            if(currentUser.role === 'admin') { mItems.forEach(i => document.getElementById(i).style.display = 'flex'); showSection('admin'); }
+            else if(currentUser.role === 'dosen') { document.getElementById('menu-jadwal').style.display = 'flex'; showSection('jadwal'); }
+            else { document.getElementById('menu-jadwal').style.display = 'flex'; document.getElementById('menu-daftar').style.display = 'flex'; document.getElementById('m-info').innerText = `${currentUser.username} - ${currentUser.nama}`; showSection('pendaftaran'); }
         }
 
         function showSection(id) {
@@ -368,30 +361,20 @@
         function renderAll() { renderJadwal(); renderAdmin(); renderUserManagement(); }
 
         function renderUserManagement() {
-            const body = document.getElementById('bodyUserManage');
-            if(!body) return;
-            let html = dbDosen.map(d => `<tr><td>${d.nama} (Dosen)</td><td>${d.username}</td><td>${d.password}</td><td><button class="btn-action btn-delete" onclick="db.ref('dosen/${d.username}').remove()">Hapus</button></td></tr>`).join('');
-            html += dbUsers.map(u => `<tr><td>${u.nama} (Mahasiswa)</td><td>${u.username}</td><td>${u.password}</td><td><button class="btn-action btn-delete" onclick="db.ref('users/${u.username}').remove()">Hapus</button></td></tr>`).join('');
+            const body = document.getElementById('bodyUserManage'); if(!body) return;
+            let html = dbDosen.map(d => `<tr><td>${d.nama} (D)</td><td>${d.username}</td><td><b>${d.password}</b></td><td><button class="btn-action btn-edit" onclick="openResetModal('dosen/${d.username}', '${d.username}')">Key</button><button class="btn-action btn-delete" onclick="db.ref('dosen/${d.username}').remove()">X</button></td></tr>`).join('');
+            html += dbUsers.map(u => `<tr><td>${u.nama} (M)</td><td>${u.username}</td><td><b>${u.password}</b></td><td><button class="btn-action btn-edit" onclick="openResetModal('users/${u.username}', '${u.username}')">Key</button><button class="btn-action btn-delete" onclick="db.ref('users/${u.username}').remove()">X</button></td></tr>`).join('');
             body.innerHTML = html;
         }
 
         function renderJadwal() {
-            const body = document.getElementById('bodyJadwal');
-            const head = document.getElementById('headJadwal');
-            body.innerHTML = '';
-
-            if(currentUser?.role === 'dosen') {
-                head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Peran & Nilai Anda</th><th>Aksi</th><th>Status</th>`;
-            } else {
-                head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Status Nilai Pembimbing & Penguji</th><th>Status Sidang</th>`;
-            }
+            const body = document.getElementById('bodyJadwal'); const head = document.getElementById('headJadwal'); body.innerHTML = '';
+            if(currentUser?.role === 'dosen') head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Peran & Nilai Anda</th><th>Aksi</th><th>Status</th>`;
+            else head.innerHTML = `<th>Mahasiswa</th><th>Waktu</th><th>Status Nilai</th><th>Status Sidang</th>`;
 
             let data = dbSidang;
-            if(currentUser?.role === 'dosen') {
-                data = dbSidang.filter(s => s.pem1===currentUser.nama || s.pem2===currentUser.nama || s.penguji.p1===currentUser.nama || s.penguji.p2===currentUser.nama || s.penguji.p3===currentUser.nama);
-            } else if(currentUser?.role === 'mahasiswa') {
-                data = dbSidang.filter(s => s.npm === currentUser.username);
-            }
+            if(currentUser?.role === 'dosen') data = dbSidang.filter(s => s.pem1===currentUser.nama || s.pem2===currentUser.nama || s.penguji.p1===currentUser.nama || s.penguji.p2===currentUser.nama || s.penguji.p3===currentUser.nama);
+            else if(currentUser?.role === 'mahasiswa') data = dbSidang.filter(s => s.npm === currentUser.username);
 
             data.forEach(s => {
                 if(currentUser?.role === 'dosen') {
@@ -401,35 +384,20 @@
                     if(s.penguji.p1 === currentUser.nama) roles.push({k:'p1', l:'Ketua Penguji'});
                     if(s.penguji.p2 === currentUser.nama) roles.push({k:'p2', l:'Penguji 2'});
                     if(s.penguji.p3 === currentUser.nama) roles.push({k:'p3', l:'Penguji 3'});
-
                     let rolesDetail = roles.map(r => `<div><b>${r.l}:</b> ${s.nilai[r.k] || 0} (${getNilaiHuruf(s.nilai[r.k])})</div>`).join('');
                     let btns = roles.map(r => `<button class="btn-action btn-edit" style="width:100%; margin-bottom:5px;" onclick="openNilaiModal(${s.id}, '${r.k}', '${r.l}')"><i class="fas fa-edit"></i> Input ${r.l}</button>`).join('');
-                    body.innerHTML += `<tr><td><b>${s.nama}</b><br><small>${s.npm}</small></td><td>${s.jadwal}</td><td>${rolesDetail}</td><td>${s.status !== 'Pending' ? btns : '<small>Menunggu Jadwal</small>'}</td><td><span class="status-badge status-${s.status}">${s.status}</span></td></tr>`;
+                    body.innerHTML += `<tr><td><b>${s.nama}</b><br><small>${s.npm}</small></td><td>${s.jadwal}</td><td>${rolesDetail}</td><td>${s.status !== 'Pending' ? btns : '<small>Tunggu Jadwal</small>'}</td><td><span class="status-badge status-${s.status}">${s.status}</span></td></tr>`;
                 } else {
                     let nContent = '';
                     if(currentUser?.role === 'mahasiswa') {
                         if(s.status === 'Done' && s.adminApproved) {
-                            const totalNilai = (s.nilai.pem1 || 0) + (s.nilai.pem2 || 0) + (s.nilai.p1 || 0) + (s.nilai.p2 || 0) + (s.nilai.p3 || 0);
-                            const avg = (totalNilai / 5).toFixed(2);
+                            const avg = (((s.nilai.pem1||0)+(s.nilai.pem2||0)+(s.nilai.p1||0)+(s.nilai.p2||0)+(s.nilai.p3||0))/5).toFixed(2);
                             nContent = `<table class="sub-table"><tr><td>Bimbingan</td><td><b>${s.nilai.pem1} / ${s.nilai.pem2}</b></td></tr><tr><td>Penguji</td><td><b>${s.nilai.p1} / ${s.nilai.p2} / ${s.nilai.p3}</b></td></tr><tr style="background:#ecfdf5;"><td><b>RATA-RATA</b></td><td><b style="color:var(--primary);">${avg} (${getNilaiHuruf(avg)})</b></td></tr></table><button class="btn-download" onclick='unduhHasilSidang(${JSON.stringify(s)})'><i class="fas fa-file-pdf"></i> Unduh Hasil Sidang</button>`;
-                        } else if (s.status === 'Done' && !s.adminApproved) {
-                             nContent = `<span style="font-style:italic; color:var(--primary-dark);">Sidang Selesai. Menunggu Validasi Admin...</span>`;
-                        } else {
-                            nContent = `<span style="font-style:italic; color:#999;">Nilai sedang diproses Tim Pembimbing & Penguji...</span>`;
-                        }
+                        } else if (s.status === 'Done' && !s.adminApproved) nContent = `<span style="font-style:italic; color:var(--primary-dark);">Sidang Selesai. Menunggu Validasi Admin...</span>`;
+                        else nContent = `<span style="font-style:italic; color:#999;">Nilai sedang diproses...</span>`;
                     } else {
-                        // ADMIN MONITORING
                         let btnApprove = (s.status === 'Done' && !s.adminApproved) ? `<button class="btn-approve" onclick="approveSidang(${s.id})"><i class="fas fa-check-double"></i> Setujui & Publikasikan Nilai</button>` : '';
-                        nContent = `
-                            <table class="sub-table">
-                                <tr style="background:#f1f5f9;"><td><b>Pembimbing</b></td><td><b>Nilai</b></td></tr>
-                                <tr><td>1: ${s.pem1}</td><td><b>${s.nilai.pem1 || 0}</b></td></tr>
-                                <tr><td>2: ${s.pem2}</td><td><b>${s.nilai.pem2 || 0}</b></td></tr>
-                                <tr style="background:#f1f5f9;"><td><b>Penguji</b></td><td><b>Nilai</b></td></tr>
-                                <tr><td>1: ${s.penguji.p1}</td><td><b>${s.nilai.p1 || 0}</b></td></tr>
-                                <tr><td>2: ${s.penguji.p2}</td><td><b>${s.nilai.p2 || 0}</b></td></tr>
-                                <tr><td>3: ${s.penguji.p3}</td><td><b>${s.nilai.p3 || 0}</b></td></tr>
-                            </table> ${btnApprove}`;
+                        nContent = `<table class="sub-table"><tr style="background:#f1f5f9;"><td><b>Pembimbing</b></td><td><b>Nilai</b></td></tr><tr><td>1: ${s.pem1}</td><td><b>${s.nilai.pem1 || 0}</b></td></tr><tr><td>2: ${s.pem2}</td><td><b>${s.nilai.pem2 || 0}</b></td></tr><tr style="background:#f1f5f9;"><td><b>Penguji</b></td><td><b>Nilai</b></td></tr><tr><td>1: ${s.penguji.p1}</td><td><b>${s.nilai.p1 || 0}</b></td></tr><tr><td>2: ${s.penguji.p2}</td><td><b>${s.nilai.p2 || 0}</b></td></tr><tr><td>3: ${s.penguji.p3}</td><td><b>${s.nilai.p3 || 0}</b></td></tr></table> ${btnApprove}`;
                     }
                     body.innerHTML += `<tr><td><b>${s.nama}</b><br><small>${s.npm}</small><br><small><i>${s.judul}</i></small></td><td>${s.jadwal}</td><td>${nContent}</td><td><span class="status-badge status-${s.status}">${s.status}</span></td></tr>`;
                 }
@@ -441,93 +409,34 @@
             const total = (data.nilai.pem1||0)+(data.nilai.pem2||0)+(data.nilai.p1||0)+(data.nilai.p2||0)+(data.nilai.p3||0);
             const avg = (total / 5).toFixed(2);
             document.getElementById('pdf-nama-mhs').innerText = data.nama.toUpperCase();
-            document.getElementById('pdf-grade').innerText = getNilaiHuruf(avg);
-            document.getElementById('pdf-skor').innerText = avg;
-            const skrg = new Date();
-            const bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-            document.getElementById('pdf-tgl-skrg').innerText = `${skrg.getDate()} ${bulan[skrg.getMonth()]} ${skrg.getFullYear()}`;
-
-            const element = document.getElementById('pdf-template');
-            element.style.visibility = 'visible';
-            const kopImg = document.getElementById('img-kop');
-            const waitForImage = () => { if (kopImg.complete) return Promise.resolve(); return new Promise(resolve => { kopImg.onload = resolve; kopImg.onerror = resolve; }); };
+            document.getElementById('pdf-grade').innerText = getNilaiHuruf(avg); document.getElementById('pdf-skor').innerText = avg;
+            const skrg = new Date(); document.getElementById('pdf-tgl-skrg').innerText = `${skrg.getDate()} ${["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][skrg.getMonth()]} ${skrg.getFullYear()}`;
+            const element = document.getElementById('pdf-template'); element.style.visibility = 'visible';
+            const kopImg = document.getElementById('img-kop'); const waitForImage = () => { if (kopImg.complete) return Promise.resolve(); return new Promise(resolve => { kopImg.onload = resolve; kopImg.onerror = resolve; }); };
             await waitForImage();
-
             html2canvas(element, { scale: 4, useCORS: true, backgroundColor: "#ffffff" }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgData = canvas.toDataURL('image/png'); const pdf = new jsPDF('p', 'mm', 'a4');
                 pdf.addImage(imgData, 'PNG', 0, 0, 210, (canvas.height * 210) / canvas.width);
-                pdf.save(`Hasil_Sidang_${data.npm}.pdf`);
-                element.style.visibility = 'hidden';
+                pdf.save(`Hasil_Sidang_${data.npm}.pdf`); element.style.visibility = 'hidden';
             });
         }
 
         document.getElementById('formDaftar').onsubmit = function(e) {
-            e.preventDefault();
-            const id = Date.now();
-            db.ref('sidang/' + id).set({
-                id: id, nama: currentUser.nama, npm: currentUser.username, judul: document.getElementById('judul').value,
-                pem1: document.getElementById('pembimbing1').value, pem2: document.getElementById('pembimbing2').value,
-                jadwal: '-', status: 'Pending', adminApproved: false, penguji: {p1:'-', p2:'-', p3:'-'},
-                nilai: {pem1:0, pem2:0, p1:0, p2:0, p3:0}, revisi: {pem1:'', pem2:'', p1:'', p2:'', p3:''}
-            });
+            e.preventDefault(); const id = Date.now();
+            db.ref('sidang/' + id).set({ id: id, nama: currentUser.nama, npm: currentUser.username, judul: document.getElementById('judul').value, pem1: document.getElementById('pembimbing1').value, pem2: document.getElementById('pembimbing2').value, jadwal: '-', status: 'Pending', adminApproved: false, penguji: {p1:'-', p2:'-', p3:'-'}, nilai: {pem1:0, pem2:0, p1:0, p2:0, p3:0}, revisi: {pem1:'', pem2:'', p1:'', p2:'', p3:''} });
             alert('Pendaftaran Berhasil!'); showSection('jadwal');
         };
 
-        function approveSidang(id) {
-            if(confirm('Setujui hasil sidang ini dan publikasikan nilai ke mahasiswa?')) {
-                db.ref(`sidang/${id}/adminApproved`).set(true).then(() => { alert('Hasil sidang telah disetujui!'); });
-            }
-        }
-
-        function renderAdmin() {
-            const body = document.getElementById('bodyAdmin');
-            if(!body) return;
-            body.innerHTML = dbSidang.map(s => `<tr><td><b>${s.nama}</b><br>${s.npm}</td><td>${s.judul}</td><td>${s.jadwal}</td><td><button class="btn-action btn-edit" onclick="openJadwalModal(${s.id})"><i class="fas fa-clock"></i></button><button class="btn-action btn-delete" onclick="db.ref('sidang/'+${s.id}).remove()"><i class="fas fa-trash"></i></button></td></tr>`).join('');
-        }
-
+        function approveSidang(id) { if(confirm('Setujui hasil sidang ini?')) db.ref(`sidang/${id}/adminApproved`).set(true).then(() => alert('Hasil sidang telah disetujui!')); }
+        function renderAdmin() { const body = document.getElementById('bodyAdmin'); if(!body) return; body.innerHTML = dbSidang.map(s => `<tr><td><b>${s.nama}</b><br>${s.npm}</td><td>${s.judul}</td><td>${s.jadwal}</td><td><button class="btn-action btn-edit" onclick="openJadwalModal(${s.id})"><i class="fas fa-clock"></i></button><button class="btn-action btn-delete" onclick="db.ref('sidang/'+${s.id}).remove()"><i class="fas fa-trash"></i></button></td></tr>`).join(''); }
         function openJadwalModal(id) { document.getElementById('edit-id').value = id; document.getElementById('modalJadwal').style.display = 'flex'; }
-        function saveJadwalCloud() {
-            const id = document.getElementById('edit-id').value;
-            db.ref('sidang/' + id).update({
-                jadwal: `${document.getElementById('set-tgl').value} Pukul ${document.getElementById('set-jam').value} WIB`,
-                status: 'Scheduled',
-                penguji: { p1: document.getElementById('set-p1').value, p2: document.getElementById('set-p2').value, p3: document.getElementById('set-p3').value }
-            });
-            closeModal('modalJadwal');
-        }
-
-        function openNilaiModal(id, role, label) {
-            const s = dbSidang.find(x => x.id == id);
-            document.getElementById('n-id').value = id; document.getElementById('n-role').value = role;
-            document.getElementById('n-title').innerText = `Input Nilai: ${label} untuk ${s.nama}`;
-            document.getElementById('n-skor').value = s.nilai[role] || ''; document.getElementById('n-revisi').value = s.revisi[role] || '';
-            document.getElementById('modalNilai').style.display = 'flex';
-        }
-
-        function saveNilaiCloud() {
-            const id = document.getElementById('n-id').value; const role = document.getElementById('n-role').value; const skor = parseFloat(document.getElementById('n-skor').value) || 0;
-            db.ref(`sidang/${id}/nilai/${role}`).set(skor); db.ref(`sidang/${id}/revisi/${role}`).set(document.getElementById('n-revisi').value);
-            const s = dbSidang.find(x => x.id == id); const n = {...s.nilai, [role]: skor};
-            if(n.pem1 > 0 && n.pem2 > 0 && n.p1 > 0 && n.p2 > 0 && n.p3 > 0) { db.ref(`sidang/${id}/status`).set('Done'); }
-            closeModal('modalNilai');
-        }
-
-        function addDosen(e) {
-            e.preventDefault();
-            const u = document.getElementById('d-user').value;
-            db.ref('dosen/' + u).set({ nama: document.getElementById('d-nama').value, username: u, password: document.getElementById('d-pass').value, role: 'dosen' });
-            e.target.reset();
-        }
-
-        function populateDosenSelects() {
-            let opts = '<option value="-">-- Pilih Dosen --</option>' + dbDosen.map(d => `<option value="${d.nama}">${d.nama}</option>`).join('');
-            ['pembimbing1','pembimbing2','set-p1','set-p2','set-p3'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerHTML = opts; });
-        }
-
+        function saveJadwalCloud() { const id = document.getElementById('edit-id').value; db.ref('sidang/' + id).update({ jadwal: `${document.getElementById('set-tgl').value} Pukul ${document.getElementById('set-jam').value} WIB`, status: 'Scheduled', penguji: { p1: document.getElementById('set-p1').value, p2: document.getElementById('set-p2').value, p3: document.getElementById('set-p3').value } }); closeModal('modalJadwal'); }
+        function openNilaiModal(id, role, label) { const s = dbSidang.find(x => x.id == id); document.getElementById('n-id').value = id; document.getElementById('n-role').value = role; document.getElementById('n-title').innerText = `Input Nilai: ${label} untuk ${s.nama}`; document.getElementById('n-skor').value = s.nilai[role] || ''; document.getElementById('n-revisi').value = s.revisi[role] || ''; document.getElementById('modalNilai').style.display = 'flex'; }
+        function saveNilaiCloud() { const id = document.getElementById('n-id').value; const role = document.getElementById('n-role').value; const skor = parseFloat(document.getElementById('n-skor').value) || 0; db.ref(`sidang/${id}/nilai/${role}`).set(skor); db.ref(`sidang/${id}/revisi/${role}`).set(document.getElementById('n-revisi').value); const s = dbSidang.find(x => x.id == id); const n = {...s.nilai, [role]: skor}; if(n.pem1 > 0 && n.pem2 > 0 && n.p1 > 0 && n.p2 > 0 && n.p3 > 0) db.ref(`sidang/${id}/status`).set('Done'); closeModal('modalNilai'); }
+        function addDosen(e) { e.preventDefault(); const u = document.getElementById('d-user').value; db.ref('dosen/' + u).set({ nama: document.getElementById('d-nama').value, username: u, password: document.getElementById('d-pass').value, role: 'dosen' }); e.target.reset(); }
+        function populateDosenSelects() { let opts = '<option value="-">-- Pilih Dosen --</option>' + dbDosen.map(d => `<option value="${d.nama}">${d.nama}</option>`).join(''); ['pembimbing1','pembimbing2','set-p1','set-p2','set-p3'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerHTML = opts; }); }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function resetSemuaData() { if(prompt('Ketik "RESET" untuk hapus database:') === 'RESET') db.ref('sidang').remove(); }
-
         if(currentUser) initApp();
     </script>
 </body>
